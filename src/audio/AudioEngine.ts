@@ -97,10 +97,18 @@ export class AudioEngine {
       case 'fm_bell':
         synth = new Tone.FMSynth({ ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
+      case 'pulse':
+      case 'pwm':
+      case 'sine':
+      case 'triangle':
+      case 'sawtooth':
+      case 'square':
+        synth = new Tone.Synth({ ...common, oscillator: { type: type as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
+        break;
       default:
         synth = new Tone.Synth({ 
           ...common, 
-          oscillator: { type: (['pulse', 'pwm', 'sine', 'triangle', 'sawtooth', 'square'].includes(type) ? type : 'square') as any }, 
+          oscillator: { type: 'square' }, 
           envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
         });
     }
@@ -182,7 +190,8 @@ export class AudioEngine {
           if (note) {
             const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
             
-            // Tone.Envelope.attack/release are getters/setters that accept numbers
+            // Tone.Envelope.attack/release are NOT AudioParam, they are direct numbers
+            // We set them directly on the object.
             if (nodes.synth.envelope) {
               nodes.synth.envelope.attack = track.attack;
               nodes.synth.envelope.release = track.release;
@@ -339,7 +348,8 @@ export class AudioEngine {
     for (let i = 0; i < ab.length; i++) {
       for (let c = 0; c < n; c++) {
         let v = Math.max(-1, Math.min(1, chs[c][i]));
-        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true); offset += 2;
+        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
+        offset += 2;
       }
     }
     return new Blob([data], { type: 'audio/wav' });
