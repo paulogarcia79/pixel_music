@@ -135,33 +135,32 @@ export class AudioEngine {
     }
   }
 
+  private static stepCounter = 0;
+  private static sequenceIndex = 0;
+
   private static setupLoop() {
     const store = useSequencerStore();
     
     Tone.Transport.scheduleRepeat((time) => {
-      const totalSteps = Tone.Transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds();
-      const stepInBar = (Math.round(totalSteps) % 32) + 1;
-      const totalBars = Math.floor(Math.round(totalSteps) / 32);
-      
       let patternId = store.currentPatternId;
-      if (store.isSongMode) {
-        const seqLength = store.songSequence.length;
-        if (seqLength > 0) {
-          const seqIndex = totalBars % seqLength;
-          patternId = store.songSequence[seqIndex];
-          
-          Tone.Draw.schedule(() => {
-            store.currentSequenceIndex = seqIndex;
-          }, time);
-        }
+      if (store.isSongMode && store.songSequence.length > 0) {
+        patternId = store.songSequence[this.sequenceIndex];
       }
-
-      Tone.Draw.schedule(() => {
-        store.setCurrentStep(stepInBar);
-      }, time);
 
       const currentPattern = store.patterns[patternId];
       if (!currentPattern) return;
+
+      const gridSize = currentPattern.gridSize || 32;
+      const stepInBar = this.stepCounter + 1;
+      const currentSeqIndex = this.sequenceIndex;
+
+      Tone.Draw.schedule(() => {
+        store.setCurrentStep(stepInBar);
+        if (store.isSongMode) {
+          store.currentSequenceIndex = currentSeqIndex;
+          store.currentPatternId = patternId; // follow sequence
+        }
+      }, time);
 
       currentPattern.tracks.forEach(track => {
         if (track.muted) return;
@@ -183,6 +182,14 @@ export class AudioEngine {
           }
         }
       });
+
+      this.stepCounter++;
+      if (this.stepCounter >= gridSize) {
+        this.stepCounter = 0;
+        if (store.isSongMode && store.songSequence.length > 0) {
+          this.sequenceIndex = (this.sequenceIndex + 1) % store.songSequence.length;
+        }
+      }
     }, '16n');
   }
 
@@ -198,8 +205,12 @@ export class AudioEngine {
         else if ('triggerRelease' in nodes.synth) nodes.synth.triggerRelease();
       });
       
+      this.stepCounter = 0;
+      this.sequenceIndex = 0;
       useSequencerStore().setCurrentStep(0);
     } else {
+      this.stepCounter = 0;
+      this.sequenceIndex = 0;
       this.masterVolume.volume.value = 0;
       Tone.Transport.seconds = 0;
       Tone.Transport.start();
@@ -251,8 +262,17 @@ export class AudioEngine {
     const secondsPerStep = Tone.Time('16n').toSeconds();
     
     // Calculate total duration based on song mode or single pattern
-    const numPatterns = store.isSongMode ? store.songSequence.length : 1;
-    const duration = numPatterns * 32 * secondsPerStep + 3; // +3 seconds for reverb/delay tails
+    let totalStepsToRender = 0;
+    if (store.isSongMode) {
+      store.songSequence.forEach(pid => {
+        const p = store.patterns[pid];
+        if (p) totalStepsToRender += (p.gridSize || 32);
+      });
+    } else {
+      const p = store.patterns[store.currentPatternId];
+      if (p) totalStepsToRender = (p.gridSize || 32);
+    }
+    const duration = totalStepsToRender * secondsPerStep + 3; // +3 seconds for reverb/delay tails
 
     const buffer = await Tone.Offline(({ transport }) => {
       // Recreate master chain for offline context
@@ -284,18 +304,20 @@ export class AudioEngine {
         return nodes;
       };
 
+      let stepCounter = 0;
+      let sequenceIndex = 0;
+
       transport.scheduleRepeat((time) => {
-        const totalSteps = transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds();
-        const stepInBar = (Math.round(totalSteps) % 32) + 1;
-        const totalBars = Math.floor(Math.round(totalSteps) / 32);
-        
         let patternId = store.currentPatternId;
         if (store.isSongMode && store.songSequence.length > 0) {
-          patternId = store.songSequence[totalBars % store.songSequence.length];
+          patternId = store.songSequence[sequenceIndex];
         }
 
         const currentPattern = store.patterns[patternId];
         if (!currentPattern) return;
+
+        const gridSize = currentPattern.gridSize || 32;
+        const stepInBar = stepCounter + 1;
 
         currentPattern.tracks.forEach(track => {
           if (track.muted) return;
@@ -315,6 +337,14 @@ export class AudioEngine {
             }
           }
         });
+
+        stepCounter++;
+        if (stepCounter >= gridSize) {
+          stepCounter = 0;
+          if (store.isSongMode && store.songSequence.length > 0) {
+            sequenceIndex = (sequenceIndex + 1) % store.songSequence.length;
+          }
+        }
       }, '16n');
 
       transport.start(0);

@@ -15,12 +15,14 @@ export interface TrackInstance {
 
 export interface Pattern {
   tracks: TrackInstance[];
+  gridSize: number;
 }
 
 export const useSequencerStore = defineStore('sequencer', {
   state: () => ({
     patterns: {
       1: {
+        gridSize: 32,
         tracks: [
           {
             name: 'Track 1',
@@ -138,6 +140,7 @@ export const useSequencerStore = defineStore('sequencer', {
     clearAll() {
       this.patterns = {
         1: {
+          gridSize: 32,
           tracks: [this.createDefaultTrack('Track 1')]
         }
       };
@@ -149,10 +152,14 @@ export const useSequencerStore = defineStore('sequencer', {
     loadProject(data: any) {
       if (data.patterns) {
         this.patterns = data.patterns;
+        // Migration: ensure gridSize exists
+        Object.values(this.patterns).forEach(p => {
+          if (!p.gridSize) p.gridSize = 32;
+        });
       } else if (data.tracks) {
         // Migration from very old format
         this.patterns = {
-          1: { tracks: data.tracks }
+          1: { gridSize: 32, tracks: data.tracks }
         };
       }
       if (data.bpm) this.setBpm(data.bpm);
@@ -162,12 +169,26 @@ export const useSequencerStore = defineStore('sequencer', {
       this.currentPatternId = id;
       if (!this.patterns[id]) {
         this.patterns[id] = {
+          gridSize: 32,
           tracks: [this.createDefaultTrack('Track 1')]
         };
       }
       // Select first track of the new pattern
       if (this.patterns[id].tracks.length > 0) {
         this.selectedTrackName = this.patterns[id].tracks[0].name;
+      }
+    },
+    setGridSize(size: number) {
+      if (this.currentPattern) {
+        this.currentPattern.gridSize = size;
+        // Clean up notes outside the new grid size
+        this.currentPattern.tracks.forEach(track => {
+          Object.keys(track.notes).forEach(step => {
+            if (parseInt(step) > size) {
+              delete track.notes[parseInt(step)];
+            }
+          });
+        });
       }
     },
     duplicatePattern(sourceId: number, targetId: number) {

@@ -68,12 +68,12 @@ const removePatternFromSequence = (index: number) => {
       </div>
 
       <!-- Add Pattern Menu -->
-      <div class="flex items-center gap-1 pl-4 border-l border-grid-line">
+      <div class="flex items-center gap-1 pl-4 border-l border-grid-line overflow-x-auto scrollbar-thin">
         <button 
-          v-for="p in 4" 
+          v-for="p in 16" 
           :key="p"
           @click="addPatternToSequence(p)"
-          class="w-10 h-10 border border-dashed border-grid-line text-[10px] text-grid-line hover:border-neon-cyan hover:text-neon-cyan flex items-center justify-center"
+          class="flex-shrink-0 w-10 h-10 border border-dashed border-grid-line text-[10px] text-grid-line hover:border-neon-cyan hover:text-neon-cyan flex items-center justify-center"
         >
           +P{{ p }}
         </button>

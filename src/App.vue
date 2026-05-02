@@ -37,17 +37,32 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
       <aside class="w-80 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4 flex flex-col flex-shrink-0">
         <div class="flex items-center justify-between mb-4 border-b border-grid-line pb-2">
           <h2 class="text-neon-cyan text-xs uppercase tracking-tighter font-bold">Tracks</h2>
-          <div class="flex gap-1">
-            <button 
-              v-for="p in 4" 
-              :key="p"
-              @click="store.setPattern(p)"
-              class="px-2 py-1 text-[8px] border transition-all"
-              :class="store.currentPatternId === p ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d]' : 'border-grid-line text-neon-cyan/50 hover:text-neon-cyan'"
-            >
-              P{{ p }}
-            </button>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1">
+              <span class="text-[8px] text-neon-cyan uppercase">Grid:</span>
+              <select 
+                :value="store.currentPattern?.gridSize || 32"
+                @change="(e) => store.setGridSize(Number((e.target as HTMLSelectElement).value))"
+                class="bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-0.5 outline-none"
+              >
+                <option :value="8">8</option>
+                <option :value="16">16</option>
+                <option :value="32">32</option>
+              </select>
+            </div>
           </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-1 mb-4">
+          <button 
+            v-for="p in 16" 
+            :key="p"
+            @click="store.setPattern(p)"
+            class="px-1.5 py-0.5 text-[8px] border transition-all flex-1 min-w-[20px]"
+            :class="store.currentPatternId === p ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d]' : (store.patterns[p] ? 'border-neon-cyan text-neon-cyan' : 'border-grid-line text-neon-cyan/30 hover:border-neon-cyan/50')"
+          >
+            P{{ p }}
+          </button>
         </div>
         
         <div class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
