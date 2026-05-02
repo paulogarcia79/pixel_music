@@ -98,7 +98,11 @@ export class AudioEngine {
         synth = new Tone.FMSynth({ ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
       default:
-        synth = new Tone.Synth({ ...common, oscillator: { type: (['pulse', 'pwm', 'sine', 'triangle', 'sawtooth', 'square'].includes(type) ? type : 'square') as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
+        synth = new Tone.Synth({ 
+          ...common, 
+          oscillator: { type: (['pulse', 'pwm', 'sine', 'triangle', 'sawtooth', 'square'].includes(type) ? type : 'square') as any }, 
+          envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
+        });
     }
     return synth.connect(dest);
   }
@@ -178,10 +182,10 @@ export class AudioEngine {
           if (note) {
             const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
             
-            // USE .value TO PREVENT BREAKING THE SIGNAL OBJECTS
+            // Tone.Envelope.attack/release are getters/setters that accept numbers
             if (nodes.synth.envelope) {
-              nodes.synth.envelope.attack.value = track.attack;
-              nodes.synth.envelope.release.value = track.release;
+              nodes.synth.envelope.attack = track.attack;
+              nodes.synth.envelope.release = track.release;
             }
             
             nodes.synth.volume.setValueAtTime(track.volume - 6, time);
@@ -224,8 +228,8 @@ export class AudioEngine {
       const store = useSequencerStore();
       const track = store.getTrackInPattern(trackName);
       if (track && s.envelope) {
-        s.envelope.attack.value = track.attack;
-        s.envelope.release.value = track.release;
+        s.envelope.attack = track.attack;
+        s.envelope.release = track.release;
       }
       s.triggerAttackRelease(note, duration);
       setTimeout(() => s.dispose(), 2000);
@@ -297,8 +301,8 @@ export class AudioEngine {
         }
         const n = synths.get(key);
         if (n.synth.envelope) {
-          n.synth.envelope.attack.value = d.track.attack;
-          n.synth.envelope.release.value = d.track.release;
+          n.synth.envelope.attack = d.track.attack;
+          n.synth.envelope.release = d.track.release;
         }
         n.synth.volume.setValueAtTime(d.track.volume - 6, d.t);
         n.reverb.wet.setValueAtTime(d.track.reverbWet, d.t);
@@ -335,8 +339,7 @@ export class AudioEngine {
     for (let i = 0; i < ab.length; i++) {
       for (let c = 0; c < n; c++) {
         let v = Math.max(-1, Math.min(1, chs[c][i]));
-        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
-        offset += 2;
+        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true); offset += 2;
       }
     }
     return new Blob([data], { type: 'audio/wav' });
