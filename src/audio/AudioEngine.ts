@@ -24,7 +24,12 @@ export class AudioEngine {
       this.masterLimiter = new Tone.Limiter(-1).toDestination();
       this.analyser = new Tone.Waveform(256);
       this.recorder = new Tone.Recorder();
-      this.masterCompressor = new Tone.Compressor({ threshold: -12, ratio: 4, attack: 0.003, release: 0.25 }).connect(this.masterLimiter);
+      this.masterCompressor = new Tone.Compressor({ 
+        threshold: -12, 
+        ratio: 4, 
+        attack: 0.003, 
+        release: 0.25 
+      }).connect(this.masterLimiter);
       this.masterCompressor.fan(this.analyser, this.recorder);
       this.masterVolume = new Tone.Volume(0).connect(this.masterCompressor);
       this.initialized = true;
@@ -32,20 +37,24 @@ export class AudioEngine {
     }
   }
 
-  public static getAnalyser() { return this.initialized ? this.analyser : null; }
+  public static getAnalyser() {
+    return this.initialized ? this.analyser : null;
+  }
 
   public static async startRecording() {
     await this.initialize();
-    this.recorder.start();
+    if (this.recorder) this.recorder.start();
   }
 
   public static async stopRecording() {
-    const blob = await this.recorder.stop();
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.download = "pixel_live_capture.webm";
-    anchor.href = url;
-    anchor.click();
+    if (this.recorder) {
+      const blob = await this.recorder.stop();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.download = "pixel_live_capture.webm";
+      a.href = url;
+      a.click();
+    }
   }
 
   private static createSynthByType(type: InstrumentType, dest: Tone.ToneAudioNode, context: Tone.BaseContext): any {
@@ -80,7 +89,7 @@ export class AudioEngine {
         synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } });
         break;
       case 'pad':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, decay: 0.5, sustain: 1, release: 2 } });
+        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, release: 2 } });
         break;
       case 'fm_pluck':
         synth = new Tone.FMSynth({ ...common, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.2, sustain: 0.1, release: 0.1 } });
@@ -88,16 +97,8 @@ export class AudioEngine {
       case 'fm_bell':
         synth = new Tone.FMSynth({ ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
-      case 'pulse':
-      case 'pwm':
-      case 'sine':
-      case 'triangle':
-      case 'sawtooth':
-      case 'square':
-        synth = new Tone.Synth({ ...common, oscillator: { type: type as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
-        break;
       default:
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
+        synth = new Tone.Synth({ ...common, oscillator: { type: (['pulse', 'pwm', 'sine', 'triangle', 'sawtooth', 'square'].includes(type) ? type : 'square') as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
     }
     return synth.connect(dest);
   }
@@ -126,7 +127,9 @@ export class AudioEngine {
   public static resetSynth(trackKey: string) {
     if (this.trackNodes.has(trackKey)) {
       const nodes = this.trackNodes.get(trackKey)!;
-      nodes.synth.dispose(); nodes.reverb.dispose(); nodes.delay.dispose();
+      nodes.synth.dispose();
+      nodes.reverb.dispose();
+      nodes.delay.dispose();
       this.trackNodes.delete(trackKey);
     }
   }
@@ -136,40 +139,60 @@ export class AudioEngine {
     Tone.Transport.scheduleRepeat((time) => {
       const globalStep = Math.round(Tone.Transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds());
       let active: { patternId: number, stepInPattern: number, arrangerTrackId: number }[] = [];
+      
       if (store.isSongMode) {
         let maxStep = 32;
         store.arrangerTracks.forEach(t => t.placements.forEach(p => {
-          const s = store.patterns[p.patternId]?.gridSize || 32; if (p.startStep + s > maxStep) maxStep = p.startStep + s;
+          const s = store.patterns[p.patternId]?.gridSize || 32;
+          if (p.startStep + s > maxStep) maxStep = p.startStep + s;
         }));
         const currentGlobalStep = globalStep % maxStep;
-        Tone.Draw.schedule(() => { store.globalStep = currentGlobalStep; store.setCurrentStep(0); }, time);
+        Tone.Draw.schedule(() => {
+          store.globalStep = currentGlobalStep;
+          store.setCurrentStep(0);
+        }, time);
+        
         store.arrangerTracks.forEach(t => t.placements.forEach(p => {
           const s = store.patterns[p.patternId]?.gridSize || 32;
-          if (currentGlobalStep >= p.startStep && currentGlobalStep < p.startStep + s) active.push({ patternId: p.patternId, stepInPattern: (currentGlobalStep - p.startStep) + 1, arrangerTrackId: t.id });
+          if (currentGlobalStep >= p.startStep && currentGlobalStep < p.startStep + s) {
+            active.push({ patternId: p.patternId, stepInPattern: (currentGlobalStep - p.startStep) + 1, arrangerTrackId: t.id });
+          }
         }));
       } else {
-        const pId = store.currentPatternId; const s = store.patterns[pId]?.gridSize || 32;
+        const pId = store.currentPatternId;
+        const s = store.patterns[pId]?.gridSize || 32;
         const currentStep = (globalStep % s) + 1;
-        Tone.Draw.schedule(() => { store.setCurrentStep(currentStep); store.globalStep = 0; }, time);
+        Tone.Draw.schedule(() => {
+          store.setCurrentStep(currentStep);
+          store.globalStep = 0;
+        }, time);
         active.push({ patternId: pId, stepInPattern: currentStep, arrangerTrackId: 0 });
       }
 
       active.forEach(({ patternId, stepInPattern, arrangerTrackId }) => {
-        const pattern = store.patterns[patternId]; if (!pattern) return;
+        const pattern = store.patterns[patternId];
+        if (!pattern) return;
         pattern.tracks.forEach(track => {
           if (track.muted) return;
           const note = track.notes[stepInPattern];
           if (note) {
             const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
+            
+            // USE .value TO PREVENT BREAKING THE SIGNAL OBJECTS
             if (nodes.synth.envelope) {
-              nodes.synth.envelope.attack = track.attack;
-              nodes.synth.envelope.release = track.release;
+              nodes.synth.envelope.attack.value = track.attack;
+              nodes.synth.envelope.release.value = track.release;
             }
+            
             nodes.synth.volume.setValueAtTime(track.volume - 6, time);
             nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
             nodes.delay.wet.setValueAtTime(track.delayWet, time);
-            if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) nodes.synth.triggerAttackRelease('16n', time);
-            else nodes.synth.triggerAttackRelease(note, '16n', time);
+
+            if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) {
+              nodes.synth.triggerAttackRelease('16n', time);
+            } else {
+              nodes.synth.triggerAttackRelease(note, '16n', time);
+            }
           }
         });
       });
@@ -184,7 +207,8 @@ export class AudioEngine {
       this.trackNodes.forEach(n => {
         if (n.synth.triggerRelease) n.synth.triggerRelease();
       });
-      useSequencerStore().setCurrentStep(0); useSequencerStore().globalStep = 0;
+      useSequencerStore().setCurrentStep(0);
+      useSequencerStore().globalStep = 0;
     } else {
       this.masterVolume.volume.value = 0;
       Tone.Transport.seconds = 0;
@@ -200,15 +224,17 @@ export class AudioEngine {
       const store = useSequencerStore();
       const track = store.getTrackInPattern(trackName);
       if (track && s.envelope) {
-        s.envelope.attack = track.attack;
-        s.envelope.release = track.release;
+        s.envelope.attack.value = track.attack;
+        s.envelope.release.value = track.release;
       }
       s.triggerAttackRelease(note, duration);
       setTimeout(() => s.dispose(), 2000);
     });
   }
 
-  public static getLastPlayedNote(): string | null { return this.lastPlayedNote; }
+  public static getLastPlayedNote(): string | null {
+    return this.lastPlayedNote;
+  }
 
   public static async exportAudioOffline(): Promise<void> {
     const store = useSequencerStore();
@@ -218,12 +244,18 @@ export class AudioEngine {
 
     if (store.isSongMode) {
       store.arrangerTracks.forEach(t => t.placements.forEach(p => {
-        const pattern = store.patterns[p.patternId]; if (!pattern) return;
+        const pattern = store.patterns[p.patternId];
+        if (!pattern) return;
         if (p.startStep + pattern.gridSize > maxSongStep) maxSongStep = p.startStep + pattern.gridSize;
         pattern.tracks.forEach(track => {
           if (track.muted) return;
           Object.entries(track.notes).forEach(([step, note]) => {
-            songData.push({ t: (p.startStep + parseInt(step) - 1) * secondsPerStep, n: note, track });
+            songData.push({ 
+              t: (p.startStep + parseInt(step) - 1) * secondsPerStep, 
+              n: note, 
+              track, 
+              arrangerTrackId: t.id 
+            });
           });
         });
       }));
@@ -234,7 +266,12 @@ export class AudioEngine {
         p.tracks.forEach(track => {
           if (track.muted) return;
           Object.entries(track.notes).forEach(([step, note]) => {
-            songData.push({ t: (parseInt(step) - 1) * secondsPerStep, n: note, track });
+            songData.push({ 
+              t: (parseInt(step) - 1) * secondsPerStep, 
+              n: note, 
+              track, 
+              arrangerTrackId: 0 
+            });
           });
         });
       }
@@ -243,12 +280,15 @@ export class AudioEngine {
     const totalSeconds = (maxSongStep * secondsPerStep) + 3.0;
     await Tone.start();
 
+    // Sort to prevent out-of-order scheduling errors
+    songData.sort((a, b) => a.t - b.t);
+
     const buffer = await Tone.Offline((context) => {
       const master = new Tone.Gain({ context: context as any, gain: 1.0 }).toDestination();
       const synths = new Map();
 
       songData.forEach(d => {
-        const key = `${d.track.name}_${d.track.type}`;
+        const key = `${d.arrangerTrackId}_${d.track.name}`;
         if (!synths.has(key)) {
           const reverb = new Tone.Freeverb({ context: context as any, roomSize: 0.7, dampening: 4000 }).connect(master);
           const delay = new Tone.FeedbackDelay({ context: context as any, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
@@ -257,25 +297,32 @@ export class AudioEngine {
         }
         const n = synths.get(key);
         if (n.synth.envelope) {
-          n.synth.envelope.attack = d.track.attack;
-          n.synth.envelope.release = d.track.release;
+          n.synth.envelope.attack.value = d.track.attack;
+          n.synth.envelope.release.value = d.track.release;
         }
         n.synth.volume.setValueAtTime(d.track.volume - 6, d.t);
         n.reverb.wet.setValueAtTime(d.track.reverbWet, d.t);
         n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
         
-        if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(d.track.type)) n.synth.triggerAttackRelease('16n', d.t);
-        else n.synth.triggerAttackRelease(d.n, '16n', d.t);
+        if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(d.track.type)) {
+          n.synth.triggerAttackRelease('16n', d.t);
+        } else {
+          n.synth.triggerAttackRelease(d.n, '16n', d.t);
+        }
       });
     }, totalSeconds);
 
     const wavBlob = await this.bufferToWav(buffer);
     const url = URL.createObjectURL(wavBlob);
-    const a = document.createElement('a'); a.download = `pixel_music_final.wav`; a.href = url; a.click();
+    const a = document.createElement('a');
+    a.download = `pixel_music_final.wav`;
+    a.href = url;
+    a.click();
   }
 
   private static async bufferToWav(buffer: Tone.ToneAudioBuffer): Promise<Blob> {
-    const ab = buffer.get(); if (!ab) throw "Error";
+    const ab = buffer.get();
+    if (!ab) throw "Error";
     const n = ab.numberOfChannels, len = ab.length * n * 2 + 44, data = new ArrayBuffer(len), view = new DataView(data);
     let offset = 44;
     const writeS = (o: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
@@ -288,7 +335,8 @@ export class AudioEngine {
     for (let i = 0; i < ab.length; i++) {
       for (let c = 0; c < n; c++) {
         let v = Math.max(-1, Math.min(1, chs[c][i]));
-        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true); offset += 2;
+        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
+        offset += 2;
       }
     }
     return new Blob([data], { type: 'audio/wav' });
