@@ -4,9 +4,15 @@ import { AudioEngine } from '../../audio/AudioEngine';
 
 const store = useSequencerStore();
 
-// Definimos una escala simple para el ejemplo (C4 a C5)
-const notes = ['C5', 'B4', 'A4', 'G4', 'F4', 'E4', 'D4', 'C4'];
+// Definimos una escala cromática de 3 octavas (C3 a B5)
+const notes = [
+  'B5', 'A#5', 'A5', 'G#5', 'G5', 'F#5', 'F5', 'E5', 'D#5', 'D5', 'C#5', 'C5',
+  'B4', 'A#4', 'A4', 'G#4', 'G4', 'F#4', 'F4', 'E4', 'D#4', 'D4', 'C#4', 'C4',
+  'B3', 'A#3', 'A3', 'G#3', 'G3', 'F#3', 'F3', 'E3', 'D#3', 'D3', 'C#3', 'C3'
+];
 const steps = Array.from({ length: 32 }, (_, i) => i + 1);
+
+const isSharp = (note: string) => note.includes('#');
 
 const isNoteActive = (trackName: string, step: number, note: string) => {
   return store.getNoteAt(trackName, step) === note;
@@ -62,18 +68,22 @@ store.ensureTrackExists(store.selectedTrackName);
 
       <!-- Filas de notas -->
       <template v-for="note in notes" :key="note">
-        <div class="bg-dark-bg border-r border-b border-grid-line px-2 md:px-4 py-2 text-[10px] md:text-xs font-bold text-neon-cyan whitespace-nowrap">
+        <div 
+          class="bg-dark-bg border-r border-b border-grid-line px-2 md:px-4 py-2 text-[10px] md:text-xs font-bold whitespace-nowrap sticky left-0 z-20"
+          :class="isSharp(note) ? 'text-neon-pink bg-dark-bg/90' : 'text-neon-cyan bg-dark-bg'"
+        >
           {{ note }}
         </div>
         <div 
           v-for="step in steps" 
           :key="step"
           @click="toggleNote(step, note)"
-          class="border-r border-b border-grid-line cursor-pointer transition-colors relative min-h-[30px]"
+          class="border-r border-b border-grid-line cursor-pointer transition-colors relative min-h-[25px]"
           :class="[
             isNoteActive(store.selectedTrackName, step, note) 
               ? 'bg-neon-pink shadow-[inset_0_0_10px_rgba(255,42,109,0.8)]' 
-              : store.currentStep === step ? 'bg-neon-cyan/5' : 'hover:bg-neon-cyan/10'
+              : isSharp(note) ? 'bg-black/40 hover:bg-neon-cyan/5' : 'hover:bg-neon-cyan/10',
+            store.currentStep === step && !isNoteActive(store.selectedTrackName, step, note) ? 'bg-neon-cyan/5' : ''
           ]"
         >
           <!-- Efecto de brillo si está activa -->

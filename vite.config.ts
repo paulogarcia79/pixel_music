@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import vitestCucumberPlugin from 'vitest-cucumber-plugin'
 
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
     tailwindcss(),
