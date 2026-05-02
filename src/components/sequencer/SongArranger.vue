@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useSequencerStore } from '../../stores/sequencer';
 
 const store = useSequencerStore();
+const copySourcePattern = ref(1);
 
 const addPatternToSequence = (id: number) => {
   store.addToSequence(id);
@@ -10,6 +12,12 @@ const addPatternToSequence = (id: number) => {
 const removePatternFromSequence = (index: number) => {
   store.removeFromSequence(index);
 };
+
+const copyFromPattern = () => {
+  if (copySourcePattern.value !== store.currentPatternId) {
+    store.duplicatePattern(copySourcePattern.value, store.currentPatternId);
+  }
+};
 </script>
 
 <template>
@@ -17,13 +25,24 @@ const removePatternFromSequence = (index: number) => {
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-neon-cyan text-xs uppercase tracking-widest font-bold">Song Arranger (Sequence)</h2>
       <div class="flex items-center gap-4">
-        <button 
-          @click="store.duplicatePattern(store.currentPatternId, store.currentPatternId + 1)"
-          class="text-[9px] border border-neon-cyan px-2 py-1 text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg transition-all uppercase"
-          title="Copy current pattern to next slot"
-        >
-          Duplicate P{{ store.currentPatternId }}
-        </button>
+        
+        <div class="flex items-center gap-2 border border-grid-line p-1">
+          <span class="text-[8px] text-neon-cyan uppercase">Copy from:</span>
+          <select 
+            v-model="copySourcePattern"
+            class="bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-0.5 outline-none w-12"
+          >
+            <option v-for="p in 16" :key="p" :value="p">P{{ p }}</option>
+          </select>
+          <button 
+            @click="copyFromPattern"
+            class="text-[9px] bg-neon-cyan/10 px-2 py-1 text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg transition-all uppercase border border-neon-cyan"
+            title="Overwrite current pattern with the selected one"
+          >
+            Copy to P{{ store.currentPatternId }}
+          </button>
+        </div>
+
         <label class="flex items-center gap-2 cursor-pointer group">
           <span class="text-[10px] uppercase text-neon-pink group-hover:shadow-[0_0_5px_#ff2a6d]">Song Mode</span>
           <input 
