@@ -32,6 +32,11 @@ export class AudioEngine {
     Tone.Transport.scheduleRepeat((time) => {
       const step = (Math.floor(Tone.Transport.seconds / Tone.Time('16n').toSeconds()) % 16) + 1;
       
+      // Actualizar el paso actual en el store para la UI
+      Tone.Draw.schedule(() => {
+        store.setCurrentStep(step);
+      }, time);
+
       store.tracks.forEach(track => {
         const note = track.notes[step];
         if (note) {
@@ -46,6 +51,7 @@ export class AudioEngine {
     
     if (Tone.Transport.state === 'started') {
       Tone.Transport.stop();
+      useSequencerStore().setCurrentStep(0);
     } else {
       Tone.Transport.start();
     }

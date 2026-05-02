@@ -10,8 +10,12 @@ export const useSequencerStore = defineStore('sequencer', {
   state: () => ({
     tracks: [] as Track[],
     bpm: 120,
+    currentStep: 0,
   }),
   actions: {
+    setCurrentStep(step: number) {
+      this.currentStep = step;
+    },
     setBpm(val: number) {
       this.bpm = val;
       Tone.Transport.bpm.value = val;
@@ -41,6 +45,11 @@ export const useSequencerStore = defineStore('sequencer', {
     getNoteAt(trackName: string, step: number): string | undefined {
       const track = this.tracks.find(t => t.name === trackName);
       return track?.notes[step];
+    },
+    clearAll() {
+      this.tracks.forEach(track => {
+        track.notes = {};
+      });
     }
   }
 });

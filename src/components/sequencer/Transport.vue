@@ -37,6 +37,13 @@ onUnmounted(() => {
     >
       {{ isPlaying ? 'Stop' : 'Play' }}
     </button>
+
+    <button 
+      @click="store.clearAll"
+      class="px-4 py-2 border border-neon-pink text-neon-pink text-[10px] uppercase hover:bg-neon-pink hover:text-white transition-all"
+    >
+      Clear
+    </button>
     
     <div class="flex items-center gap-2">
       <span class="text-xs uppercase text-neon-pink">BPM:</span>

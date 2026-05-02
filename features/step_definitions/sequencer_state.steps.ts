@@ -40,3 +40,15 @@ Then('{string} should not have the note {string} at step {int}', (state: any, [t
   expect(store.getNoteAt(trackName, step)).not.toBe(note);
   return state;
 });
+
+When('the current step is set to {int}', (state: any, [step]: [number]) => {
+  const store = useSequencerStore();
+  store.setCurrentStep(step);
+  return state;
+});
+
+Then('the sequencer should indicate step {int} is active', (state: any, [step]: [number]) => {
+  const store = useSequencerStore();
+  expect(store.currentStep).toBe(step);
+  return state;
+});

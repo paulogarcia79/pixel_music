@@ -14,3 +14,8 @@ Feature: Sequencer State Management
     When I add a note "E4" at step 1 in "Track 1"
     Then "Track 1" should only have the note "E4" at step 1
     And "Track 1" should not have the note "C4" at step 1
+
+  Scenario: Updating current step
+    Given a new sequencer state
+    When the current step is set to 5
+    Then the sequencer should indicate step 5 is active
