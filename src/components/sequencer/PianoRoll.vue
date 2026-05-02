@@ -47,18 +47,18 @@ store.ensureTrackExists(store.selectedTrackName);
       <!-- Línea Láser (Cursor de reproducción) -->
       <div 
         v-show="store.currentStep > 0"
-        class="absolute top-0 bottom-0 w-0.5 bg-neon-cyan shadow-[0_0_15px_#05d9e8] z-10 pointer-events-none transition-all duration-100 ease-linear"
+        class="absolute top-0 bottom-0 w-0.5 bg-neon-cyan shadow-[0_0_15px_#05d9e8] z-50 pointer-events-none transition-all duration-100 ease-linear"
         :style="{ 
           left: `calc(80px + ((${store.currentStep} - 1) * (100% - 80px) / 32))`,
         }"
       ></div>
 
       <!-- Header de pasos -->
-      <div class="w-[80px] bg-dark-bg border-r border-b border-grid-line p-2"></div>
+      <div class="w-[80px] bg-dark-bg border-r border-b border-grid-line p-2 sticky top-0 left-0 z-40"></div>
       <div 
         v-for="step in steps" 
         :key="step" 
-        class="text-[10px] text-center border-r border-b border-grid-line py-1 transition-colors overflow-hidden"
+        class="text-[10px] text-center border-r border-b border-grid-line py-1 transition-colors overflow-hidden sticky top-0 bg-dark-bg z-30"
         :class="[
           store.currentStep === step ? 'text-neon-cyan bg-neon-cyan/20' : 'text-neon-cyan/50'
         ]"
