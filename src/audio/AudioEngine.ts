@@ -1,17 +1,17 @@
 import * as Tone from 'tone';
+import { useSequencerStore } from '../stores/sequencer';
 
 export class AudioEngine {
   private static synth: Tone.Synth;
   private static lastPlayedNote: string | null = null;
   private static initialized: boolean = false;
 
-  public static initialize() {
+  public static async initialize() {
     if (!this.initialized) {
-      // Usamos onda cuadrada (square) por defecto para darle ese toque 8-bit
+      await Tone.start();
+      
       this.synth = new Tone.Synth({
-        oscillator: {
-          type: 'square'
-        },
+        oscillator: { type: 'square' },
         envelope: {
           attack: 0.01,
           decay: 0.1,
@@ -21,16 +21,43 @@ export class AudioEngine {
       }).toDestination();
       
       this.initialized = true;
+      this.setupLoop();
+    }
+  }
+
+  private static setupLoop() {
+    const store = useSequencerStore();
+    
+    // El loop corre cada semicorchea (16n)
+    Tone.Transport.scheduleRepeat((time) => {
+      const step = (Math.floor(Tone.Transport.seconds / Tone.Time('16n').toSeconds()) % 16) + 1;
+      
+      store.tracks.forEach(track => {
+        const note = track.notes[step];
+        if (note) {
+          this.synth.triggerAttackRelease(note, '16n', time);
+        }
+      });
+    }, '16n');
+  }
+
+  public static async toggle() {
+    await this.initialize();
+    
+    if (Tone.Transport.state === 'started') {
+      Tone.Transport.stop();
+    } else {
+      Tone.Transport.start();
     }
   }
 
   public static playNote(note: string, duration: string) {
     if (!this.initialized) {
-      console.warn("AudioEngine no está inicializado. Llama a initialize() primero.");
+      this.initialize().then(() => {
+        this.synth.triggerAttackRelease(note, duration);
+      });
       return;
     }
-    
-    // Reproducir la nota
     this.synth.triggerAttackRelease(note, duration);
     this.lastPlayedNote = note;
   }
@@ -39,3 +66,4 @@ export class AudioEngine {
     return this.lastPlayedNote;
   }
 }
+

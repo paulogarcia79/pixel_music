@@ -13,6 +13,16 @@ vi.mock('tone', () => {
   return {
     Synth: SynthMock,
     start: vi.fn(),
+    Transport: {
+      scheduleRepeat: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      seconds: 0,
+      state: 'stopped'
+    },
+    Time: vi.fn(() => ({
+      toSeconds: () => 0.25
+    }))
   };
 });
 

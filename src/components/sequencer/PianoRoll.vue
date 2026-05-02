@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSequencerStore } from '../../stores/sequencer';
+import { AudioEngine } from '../../audio/AudioEngine';
 
 const store = useSequencerStore();
 
@@ -16,6 +17,7 @@ const toggleNote = (trackName: string, step: number, note: string) => {
     store.removeNote(trackName, step);
   } else {
     store.addNote(trackName, step, note);
+    AudioEngine.playNote(note, '16n');
   }
 };
 

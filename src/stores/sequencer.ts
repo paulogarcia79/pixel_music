@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import * as Tone from 'tone';
 
 interface Track {
   name: string;
@@ -11,6 +12,10 @@ export const useSequencerStore = defineStore('sequencer', {
     bpm: 120,
   }),
   actions: {
+    setBpm(val: number) {
+      this.bpm = val;
+      Tone.Transport.bpm.value = val;
+    },
     addTrack(name: string) {
       this.tracks.push({ name, notes: {} });
     },
