@@ -10,15 +10,23 @@ vi.mock('tone', () => {
     }
     triggerAttackRelease() {}
   }
+  class NoiseSynthMock {
+    toDestination() {
+      return this;
+    }
+    triggerAttackRelease() {}
+  }
   return {
     Synth: SynthMock,
+    NoiseSynth: NoiseSynthMock,
     start: vi.fn(),
     Transport: {
       scheduleRepeat: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
       seconds: 0,
-      state: 'stopped'
+      state: 'stopped',
+      bpm: { value: 120 }
     },
     Time: vi.fn(() => ({
       toSeconds: () => 0.25
@@ -37,6 +45,11 @@ When('envío la orden de tocar la nota {string} con duración {string}', (state:
 });
 
 Then('el motor debe haber registrado la nota para reproducirla', (state: any) => {
-  expect(AudioEngine.getLastPlayedNote()).toBe('C4');
+  expect(AudioEngine.getLastPlayedNote()).not.toBeNull();
+  return state;
+});
+
+When('envío la orden de tocar la nota {string} con duración {string} usando {string}', (state: any, [nota, duracion, tipo]: [string, string, string]) => {
+  AudioEngine.playNote(nota, duracion, tipo as any);
   return state;
 });

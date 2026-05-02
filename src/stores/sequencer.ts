@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
 import * as Tone from 'tone';
 
+export type InstrumentType = 'square' | 'triangle' | 'sawtooth' | 'noise';
+
 interface Track {
   name: string;
   notes: Record<number, string>; // step -> note
+  type: InstrumentType;
 }
 
 export const useSequencerStore = defineStore('sequencer', {
@@ -11,6 +14,7 @@ export const useSequencerStore = defineStore('sequencer', {
     tracks: [] as Track[],
     bpm: 120,
     currentStep: 0,
+    selectedTrackName: 'Track 1',
   }),
   actions: {
     setCurrentStep(step: number) {
@@ -20,12 +24,19 @@ export const useSequencerStore = defineStore('sequencer', {
       this.bpm = val;
       Tone.Transport.bpm.value = val;
     },
-    addTrack(name: string) {
-      this.tracks.push({ name, notes: {} });
+    addTrack(name: string, type: InstrumentType = 'square') {
+      this.tracks.push({ name, notes: {}, type });
     },
     ensureTrackExists(name: string) {
       if (!this.tracks.find(t => t.name === name)) {
         this.addTrack(name);
+      }
+    },
+    setTrackType(trackName: string, type: InstrumentType) {
+      this.ensureTrackExists(trackName);
+      const track = this.tracks.find(t => t.name === trackName);
+      if (track) {
+        track.type = type;
       }
     },
     addNote(trackName: string, step: number, note: string) {

@@ -52,3 +52,16 @@ Then('the sequencer should indicate step {int} is active', (state: any, [step]: 
   expect(store.currentStep).toBe(step);
   return state;
 });
+
+When('I set the instrument of {string} to {string}', (state: any, [trackName, type]: [string, string]) => {
+  const store = useSequencerStore();
+  store.setTrackType(trackName, type as any);
+  return state;
+});
+
+Then('{string} should have {string} as instrument type', (state: any, [trackName, type]: [string, string]) => {
+  const store = useSequencerStore();
+  const track = store.tracks.find(t => t.name === trackName);
+  expect(track?.type).toBe(type);
+  return state;
+});

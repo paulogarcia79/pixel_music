@@ -12,18 +12,20 @@ const isNoteActive = (trackName: string, step: number, note: string) => {
   return store.getNoteAt(trackName, step) === note;
 };
 
-const toggleNote = (trackName: string, step: number, note: string) => {
+const toggleNote = (step: number, note: string) => {
+  const trackName = store.selectedTrackName;
+  const track = store.tracks.find(t => t.name === trackName);
+  
   if (isNoteActive(trackName, step, note)) {
     store.removeNote(trackName, step);
   } else {
     store.addNote(trackName, step, note);
-    AudioEngine.playNote(note, '16n');
+    AudioEngine.playNote(note, '16n', track?.type);
   }
 };
 
 // Por ahora usamos una pista fija "Track 1"
-const currentTrack = "Track 1";
-store.ensureTrackExists(currentTrack);
+store.ensureTrackExists(store.selectedTrackName);
 </script>
 
 <template>
@@ -60,16 +62,16 @@ store.ensureTrackExists(currentTrack);
         <div 
           v-for="step in steps" 
           :key="step"
-          @click="toggleNote(currentTrack, step, note)"
+          @click="toggleNote(step, note)"
           class="border-r border-b border-grid-line cursor-pointer transition-colors relative"
           :class="[
-            isNoteActive(currentTrack, step, note) 
+            isNoteActive(store.selectedTrackName, step, note) 
               ? 'bg-neon-pink shadow-[inset_0_0_10px_rgba(255,42,109,0.8)]' 
               : store.currentStep === step ? 'bg-neon-cyan/5' : 'hover:bg-neon-cyan/10'
           ]"
         >
           <!-- Efecto de brillo si está activa -->
-          <div v-if="isNoteActive(currentTrack, step, note)" class="absolute inset-0 animate-pulse bg-white/20"></div>
+          <div v-if="isNoteActive(store.selectedTrackName, step, note)" class="absolute inset-0 animate-pulse bg-white/20"></div>
         </div>
       </template>
     </div>

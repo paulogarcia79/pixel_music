@@ -7,3 +7,8 @@ Feature: Chiptune Audio Engine
     Given que el motor de audio está inicializado
     When envío la orden de tocar la nota "C4" con duración "16n"
     Then el motor debe haber registrado la nota para reproducirla
+
+  Scenario: Tocar una nota con un sintetizador específico
+    Given que el motor de audio está inicializado
+    When envío la orden de tocar la nota "G4" con duración "8n" usando "triangle"
+    Then el motor debe haber registrado la nota para reproducirla

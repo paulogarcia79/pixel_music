@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import Transport from './components/sequencer/Transport.vue';
 import PianoRoll from './components/sequencer/PianoRoll.vue';
+import { useSequencerStore, type InstrumentType } from './stores/sequencer';
+
+const store = useSequencerStore();
+
+const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise'];
+
+const addTrack = () => {
+  const newTrackName = `Track ${store.tracks.length + 1}`;
+  store.addTrack(newTrackName);
+  store.selectedTrackName = newTrackName;
+};
 </script>
 
 <template>
@@ -10,17 +21,46 @@ import PianoRoll from './components/sequencer/PianoRoll.vue';
 
     <!-- Main Content -->
     <main class="flex-1 flex overflow-hidden">
-      <!-- Sidebar (Future tracks list) -->
-      <aside class="w-64 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4">
+      <!-- Sidebar -->
+      <aside class="w-64 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4 flex flex-col">
         <h2 class="text-neon-cyan text-xs uppercase tracking-tighter mb-4 border-b border-grid-line pb-2">Tracks</h2>
-        <div class="space-y-2">
-          <div class="p-2 border border-neon-cyan/30 text-neon-cyan text-xs cursor-pointer bg-neon-cyan/5">
-            Track 1 [SQUARE]
+        
+        <div class="flex-1 space-y-4 overflow-y-auto pr-2">
+          <div 
+            v-for="track in store.tracks" 
+            :key="track.name"
+            class="p-3 border transition-all duration-200"
+            :class="[
+              store.selectedTrackName === track.name 
+                ? 'border-neon-cyan bg-neon-cyan/10 shadow-[0_0_10px_rgba(5,217,232,0.2)]' 
+                : 'border-grid-line hover:border-neon-cyan/50 bg-transparent'
+            ]"
+            @click="store.selectedTrackName = track.name"
+          >
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-neon-cyan text-xs font-bold uppercase">{{ track.name }}</span>
+              <span class="text-[9px] text-neon-pink opacity-70">{{ track.type }}</span>
+            </div>
+            
+            <select 
+              :value="track.type"
+              @change="(e) => store.setTrackType(track.name, (e.target as HTMLSelectElement).value as InstrumentType)"
+              @click.stop
+              class="w-full bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-1 focus:border-neon-pink outline-none uppercase"
+            >
+              <option v-for="type in instrumentTypes" :key="type" :value="type">
+                {{ type }}
+              </option>
+            </select>
           </div>
-          <button class="w-full p-2 border border-dashed border-grid-line text-grid-line text-[10px] hover:border-neon-cyan hover:text-neon-cyan transition-colors">
-            + ADD TRACK
-          </button>
         </div>
+
+        <button 
+          @click="addTrack"
+          class="mt-4 w-full p-2 border border-dashed border-grid-line text-grid-line text-[10px] hover:border-neon-cyan hover:text-neon-cyan transition-colors uppercase tracking-widest"
+        >
+          + ADD TRACK
+        </button>
       </aside>
 
       <!-- Piano Roll Area -->

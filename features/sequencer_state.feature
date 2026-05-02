@@ -19,3 +19,8 @@ Feature: Sequencer State Management
     Given a new sequencer state
     When the current step is set to 5
     Then the sequencer should indicate step 5 is active
+
+  Scenario: Changing track instrument type
+    Given a new sequencer state
+    When I set the instrument of "Track 1" to "triangle"
+    Then "Track 1" should have "triangle" as instrument type
