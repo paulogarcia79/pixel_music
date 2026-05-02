@@ -1,7 +1,15 @@
 import { defineStore } from 'pinia';
 import * as Tone from 'tone';
 
-export type InstrumentType = 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'fm_pluck' | 'fm_bell' | 'kick' | 'snare' | 'hihat' | 'pulse' | 'pwm' | 'bass_synth' | 'lead_synth' | 'pad' | 'tom' | 'clap' | 'crash';
+export type InstrumentType = 
+  | 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'pulse' | 'pwm' 
+  | 'fm_pluck' | 'fm_bell' | 'bass_synth' | 'lead_synth' | 'pad'
+  | 'kick' | 'snare' | 'hihat' | 'tom' | 'clap' | 'crash' | 'conga' | 'cowbell' | 'woodblock' | 'shaker' | 'rimshot'
+  | 'organ_pixel' | 'church_organ' 
+  | 'guitar_pixel' | 'guitar_dist' 
+  | 'piano_pixel' | 'electric_piano' | 'honky_tonk'
+  | 'flute_pixel' | 'clarinet_pixel' | 'retro_oboe'
+  | 'acid_synth' | 'retro_brass' | 'ghost_synth' | 'sub_bass' | 'super_saw';
 
 export interface TrackInstance {
   name: string;

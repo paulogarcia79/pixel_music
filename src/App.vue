@@ -7,7 +7,28 @@ import { AudioEngine } from './audio/AudioEngine';
 
 const store = useSequencerStore();
 
-const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell', 'kick', 'snare', 'hihat', 'pulse', 'pwm', 'bass_synth', 'lead_synth', 'pad', 'tom', 'clap', 'crash'];
+const instrumentGroups = [
+  {
+    name: 'Retro Basics',
+    types: ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'pulse', 'pwm']
+  },
+  {
+    name: 'Percussion',
+    types: ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot']
+  },
+  {
+    name: 'Keys & Organs',
+    types: ['piano_pixel', 'electric_piano', 'honky_tonk', 'organ_pixel', 'church_organ']
+  },
+  {
+    name: 'Strings & Vents',
+    types: ['guitar_pixel', 'guitar_dist', 'flute_pixel', 'clarinet_pixel', 'retro_oboe']
+  },
+  {
+    name: 'Synths',
+    types: ['bass_synth', 'sub_bass', 'lead_synth', 'super_saw', 'acid_synth', 'pad', 'fm_pluck', 'fm_bell', 'retro_brass', 'ghost_synth']
+  }
+];
 
 const addTrack = () => {
   const newTrackName = `Track ${store.currentTracks.length + 1}`;
@@ -127,9 +148,11 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
                 @click.stop
                 class="w-full bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-1 focus:border-neon-pink outline-none uppercase"
               >
-                <option v-for="type in instrumentTypes" :key="type" :value="type">
-                  {{ type }}
-                </option>
+                <optgroup v-for="group in instrumentGroups" :key="group.name" :label="group.name" class="bg-dark-bg">
+                  <option v-for="type in group.types" :key="type" :value="type">
+                    {{ type.replace('_', ' ') }}
+                  </option>
+                </optgroup>
               </select>
 
               <div class="flex items-center gap-2" @click.stop>
