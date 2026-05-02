@@ -76,12 +76,45 @@ export class AudioEngine {
         noise: { type: 'pink' },
         envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
       }),
+      clap: () => new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 }
+      }),
+      crash: () => new Tone.NoiseSynth({
+        noise: { type: 'white' },
+        envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 0.5 }
+      }),
+      tom: () => new Tone.MembraneSynth({
+        pitchDecay: 0.1, octaves: 4, oscillator: { type: 'square' },
+        envelope: { attack: 0.01, decay: 0.4, sustain: 0.01, release: 1.4 }
+      }),
+      bass_synth: () => new Tone.FMSynth({
+        harmonicity: 0.5, modulationIndex: 5,
+        oscillator: { type: 'triangle' },
+        envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 }
+      }),
+      lead_synth: () => new Tone.Synth({
+        oscillator: { type: 'sawtooth' },
+        envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 }
+      }),
+      pad: () => new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.5, decay: 0.5, sustain: 1, release: 2 }
+      }),
       noise: () => new Tone.NoiseSynth({ 
         envelope: { attack: 0.005, decay: 0.1, sustain: 0.0 } 
       }),
       sine: () => new Tone.Synth({ 
         oscillator: { type: 'sine' }, 
         envelope: { attack: 0.05, release: 1 } 
+      }),
+      pulse: () => new Tone.Synth({ 
+        oscillator: { type: 'pulse' }, 
+        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
+      }),
+      pwm: () => new Tone.Synth({ 
+        oscillator: { type: 'pwm' }, 
+        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
       }),
       fm_pluck: () => new Tone.FMSynth({ 
         modulationIndex: 10, 
@@ -173,9 +206,9 @@ export class AudioEngine {
           nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
           nodes.delay.wet.setValueAtTime(track.delayWet, time);
 
-          if (track.type === 'noise' || track.type === 'snare' || track.type === 'hihat') {
+          if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) {
             (nodes.synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
-          } else if (track.type === 'kick') {
+          } else if (['kick', 'tom'].includes(track.type)) {
             (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
           } else {
             nodes.synth.triggerAttackRelease(note, '16n', time);
@@ -243,9 +276,9 @@ export class AudioEngine {
       nodes.synth.volume.setValueAtTime(-16, time);
     }
 
-    if (type === 'noise' || type === 'snare' || type === 'hihat') {
+    if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(type)) {
       (nodes.synth as Tone.NoiseSynth).triggerAttackRelease(duration, time);
-    } else if (type === 'kick') {
+    } else if (['kick', 'tom'].includes(type)) {
       (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, duration, time);
     } else {
       nodes.synth.triggerAttackRelease(note, duration, time);
