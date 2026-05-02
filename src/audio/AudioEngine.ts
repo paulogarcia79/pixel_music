@@ -5,6 +5,7 @@ interface TrackNodes {
   synth: any;
   reverb: any;
   delay: any;
+  currentType: InstrumentType;
 }
 
 export class AudioEngine {
@@ -32,27 +33,71 @@ export class AudioEngine {
   }
 
   public static getAnalyser() { return this.initialized ? this.analyser : null; }
-  public static async startRecording() { await this.initialize(); this.recorder.start(); }
+
+  public static async startRecording() {
+    await this.initialize();
+    this.recorder.start();
+  }
+
   public static async stopRecording() {
     const blob = await this.recorder.stop();
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.download = "pixel_live_capture.webm"; a.href = url; a.click();
+    const anchor = document.createElement("a");
+    anchor.download = "pixel_live_capture.webm";
+    anchor.href = url;
+    anchor.click();
   }
 
   private static createSynthByType(type: InstrumentType, dest: Tone.ToneAudioNode, context: Tone.BaseContext): any {
     const common = { context };
     let synth: any;
     switch (type) {
-      case 'kick': synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.05, octaves: 10, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 } }); break;
-      case 'snare': synth = new Tone.NoiseSynth({ ...common, envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 } }); break;
-      case 'hihat': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'pink' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } }); break;
-      case 'clap': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }); break;
-      case 'crash': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 1.0, sustain: 0, release: 1.0 } }); break;
-      case 'tom': synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.1, octaves: 4, envelope: { attack: 0.01, decay: 0.4, sustain: 0.01, release: 1.4 } }); break;
-      case 'bass_synth': synth = new Tone.FMSynth({ ...common, harmonicity: 0.5, modulationIndex: 5, envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 } }); break;
-      case 'lead_synth': synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } }); break;
-      case 'pad': synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, release: 2 } }); break;
-      default: synth = new Tone.Synth({ ...common, oscillator: { type: type as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
+      case 'kick':
+        synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.05, octaves: 10, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 } });
+        break;
+      case 'snare':
+        synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 } });
+        break;
+      case 'hihat':
+        synth = new Tone.NoiseSynth({ ...common, noise: { type: 'pink' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } });
+        break;
+      case 'clap':
+        synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.08 } });
+        break;
+      case 'crash':
+        synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 1.0 } });
+        break;
+      case 'noise':
+        synth = new Tone.NoiseSynth({ ...common, envelope: { attack: 0.01, decay: 0.1, sustain: 0 } });
+        break;
+      case 'tom':
+        synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.1, octaves: 4, envelope: { attack: 0.01, decay: 0.4, sustain: 0.01, release: 1.4 } });
+        break;
+      case 'bass_synth':
+        synth = new Tone.FMSynth({ ...common, harmonicity: 0.5, modulationIndex: 5, envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 } });
+        break;
+      case 'lead_synth':
+        synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } });
+        break;
+      case 'pad':
+        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, decay: 0.5, sustain: 1, release: 2 } });
+        break;
+      case 'fm_pluck':
+        synth = new Tone.FMSynth({ ...common, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.2, sustain: 0.1, release: 0.1 } });
+        break;
+      case 'fm_bell':
+        synth = new Tone.FMSynth({ ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
+        break;
+      case 'pulse':
+      case 'pwm':
+      case 'sine':
+      case 'triangle':
+      case 'sawtooth':
+      case 'square':
+        synth = new Tone.Synth({ ...common, oscillator: { type: type as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
+        break;
+      default:
+        synth = new Tone.Synth({ ...common, oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
     }
     return synth.connect(dest);
   }
@@ -60,11 +105,20 @@ export class AudioEngine {
   private static getOrCreateLiveNodes(key: string, type: InstrumentType): TrackNodes {
     const existing = this.trackNodes.get(key);
     const context = Tone.getContext();
+
+    if (existing && existing.currentType !== type) {
+      existing.synth.dispose();
+      existing.synth = this.createSynthByType(type, existing.delay, context);
+      existing.currentType = type;
+      return existing;
+    }
+
     if (existing) return existing;
+
     const reverb = new Tone.Freeverb({ context, roomSize: 0.7, dampening: 4000 }).connect(this.masterVolume);
     const delay = new Tone.FeedbackDelay({ context, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
     const synth = this.createSynthByType(type, delay, context);
-    const nodes = { synth, reverb, delay };
+    const nodes = { synth, reverb, delay, currentType: type };
     this.trackNodes.set(key, nodes);
     return nodes;
   }
@@ -127,7 +181,9 @@ export class AudioEngine {
     if (Tone.Transport.state === 'started') {
       Tone.Transport.stop();
       this.masterVolume.volume.rampTo(-Infinity, 0.05);
-      this.trackNodes.forEach(n => n.synth.triggerRelease());
+      this.trackNodes.forEach(n => {
+        if (n.synth.triggerRelease) n.synth.triggerRelease();
+      });
       useSequencerStore().setCurrentStep(0); useSequencerStore().globalStep = 0;
     } else {
       this.masterVolume.volume.value = 0;

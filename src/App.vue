@@ -58,10 +58,19 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
             v-for="p in 16" 
             :key="p"
             @click="store.setPattern(p)"
-            class="py-1 text-[8px] border transition-all text-center"
-            :class="store.currentPatternId === p ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d]' : (store.patterns[p] ? 'border-neon-cyan text-neon-cyan' : 'border-grid-line text-neon-cyan/30 hover:border-neon-cyan/50')"
+            class="py-1 text-[8px] border transition-all text-center relative group"
+            :class="[
+              store.currentPatternId === p 
+                ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d] z-10' 
+                : 'border-grid-line text-neon-cyan/40 hover:border-neon-cyan/60'
+            ]"
           >
             P{{ p }}
+            <!-- Indicator for patterns with notes -->
+            <div 
+              v-if="store.patterns[p] && store.patterns[p].tracks.some(t => Object.keys(t.notes).length > 0)"
+              class="absolute bottom-0.5 right-0.5 w-1 h-1 bg-neon-cyan rounded-full shadow-[0_0_2px_#05d9e8]"
+            ></div>
           </button>
         </div>
         

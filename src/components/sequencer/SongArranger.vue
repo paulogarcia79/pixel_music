@@ -4,8 +4,12 @@ import { useSequencerStore } from '../../stores/sequencer';
 
 const store = useSequencerStore();
 const brushPatternId = ref(1);
+const copySourceId = ref(1);
 const snapSteps = ref(8);
 const STEP_WIDTH = 12; // pixels per step
+
+const showCopyModal = ref(false);
+const modalData = ref({ source: 0, target: 0 });
 
 const maxSteps = computed(() => {
   let max = 64; 
@@ -27,24 +31,68 @@ const getPatternSize = (patternId: number) => {
 const handleTimelineClick = (arrangerTrackId: number, event: MouseEvent) => {
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
   const x = event.clientX - rect.left;
-  const rawStep = x / STEP_WIDTH;
+  // Subtract the 80px header offset
+  const adjustedX = x - 80;
+  if (adjustedX < 0) return;
+  
+  const rawStep = adjustedX / STEP_WIDTH;
   const startStep = Math.floor(rawStep / snapSteps.value) * snapSteps.value;
   store.addPlacement(arrangerTrackId, brushPatternId.value, startStep);
 };
 
-const copyFromPattern = () => {
-  const sourceId = brushPatternId.value;
+const openCopyModal = () => {
+  const sourceId = copySourceId.value;
   const targetId = store.currentPatternId;
   if (sourceId !== targetId) {
-    if (confirm(`Sobreescribir P${targetId} con el contenido de P${sourceId}?`)) {
-      store.duplicatePattern(sourceId, targetId);
-    }
+    modalData.value = { source: sourceId, target: targetId };
+    showCopyModal.value = true;
   }
+};
+
+const confirmCopy = () => {
+  store.duplicatePattern(modalData.value.source, modalData.value.target);
+  showCopyModal.value = false;
 };
 </script>
 
 <template>
   <div class="bg-dark-bg border-t border-grid-line p-4 flex flex-col h-72">
+    <!-- Custom Neon Modal -->
+    <div v-if="showCopyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+      <div class="bg-dark-bg border-2 border-neon-cyan p-8 max-w-sm w-full shadow-[0_0_40px_rgba(5,217,232,0.4)] relative">
+        <div class="absolute -top-2 -left-2 w-4 h-4 bg-neon-cyan shadow-[0_0_10px_#05d9e8]"></div>
+        <div class="absolute -bottom-2 -right-2 w-4 h-4 bg-neon-cyan shadow-[0_0_10px_#05d9e8]"></div>
+        
+        <h3 class="text-neon-cyan text-sm font-black uppercase tracking-[0.2em] mb-6 border-b border-grid-line pb-2 flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-neon-pink"></span>
+          System Alert
+        </h3>
+        
+        <p class="text-[11px] text-white leading-relaxed mb-8 font-mono">
+          IDENTIFIED ACTION: OVERWRITE DATA<br/>
+          TARGET: <span class="text-neon-pink font-bold">PATTERN {{ modalData.target }}</span><br/>
+          SOURCE: <span class="text-neon-cyan font-bold">PATTERN {{ modalData.source }}</span><br/>
+          <br/>
+          ALL EXISTING DATA IN TARGET WILL BE DELETED. PROCEED?
+        </p>
+        
+        <div class="flex gap-4">
+          <button 
+            @click="confirmCopy"
+            class="flex-1 py-3 bg-neon-cyan text-dark-bg text-[10px] font-black uppercase tracking-widest hover:bg-white hover:shadow-[0_0_15px_#fff] transition-all"
+          >
+            Execute
+          </button>
+          <button 
+            @click="showCopyModal = false"
+            class="flex-1 py-3 border border-neon-pink text-neon-pink text-[10px] font-black uppercase tracking-widest hover:bg-neon-pink/20 transition-all"
+          >
+            Abort
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-neon-cyan text-xs uppercase tracking-widest font-bold flex items-center gap-2">
         <span class="w-2 h-2 bg-neon-cyan animate-pulse"></span>
@@ -54,6 +102,23 @@ const copyFromPattern = () => {
       <div class="flex items-center gap-4">
         <!-- Pattern Brush & Tooling -->
         <div class="flex items-center gap-2 bg-grid-line/20 border border-grid-line p-1 px-2 rounded">
+          <div class="flex items-center gap-1 border-r border-grid-line pr-2 mr-1">
+            <span class="text-[8px] text-neon-cyan uppercase">Copy from:</span>
+            <select 
+              v-model="copySourceId"
+              class="bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-0.5 outline-none w-12"
+            >
+              <option v-for="p in 16" :key="p" :value="p">P{{ p }}</option>
+            </select>
+            
+            <button 
+              @click="openCopyModal"
+              class="ml-1 text-[8px] bg-neon-cyan/10 px-2 py-1 text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg transition-all uppercase border border-neon-cyan/50 font-bold"
+            >
+              Copy to P{{ store.currentPatternId }}
+            </button>
+          </div>
+
           <span class="text-[8px] text-neon-cyan uppercase">Brush P:</span>
           <select 
             v-model="brushPatternId"
@@ -62,13 +127,6 @@ const copyFromPattern = () => {
             <option v-for="p in 16" :key="p" :value="p">P{{ p }}</option>
           </select>
           
-          <button 
-            @click="copyFromPattern"
-            class="ml-2 text-[8px] bg-neon-cyan/10 px-2 py-1 text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg transition-all uppercase border border-neon-cyan/50"
-          >
-            Clone to current
-          </button>
-
           <span class="text-[8px] text-neon-cyan uppercase ml-4">Snap:</span>
           <select 
             v-model="snapSteps"
@@ -111,7 +169,7 @@ const copyFromPattern = () => {
 
     <!-- Timeline Grid -->
     <div class="flex-1 overflow-x-auto relative border border-grid-line scrollbar-thin bg-dark-bg/80">
-      <div class="relative min-h-full" :style="{ width: totalWidth + 'px' }">
+      <div class="relative min-h-full" :style="{ width: (totalWidth + 80) + 'px' }">
         <!-- Ruler -->
         <div class="h-6 border-b border-grid-line sticky top-0 bg-dark-bg z-20 flex">
           <div class="w-20 flex-shrink-0 bg-dark-bg border-r border-grid-line"></div>
@@ -137,7 +195,7 @@ const copyFromPattern = () => {
             <span class="truncate">{{ track.name }}</span>
             <button 
               @click.stop="store.removeArrangerTrack(track.id)"
-              class="text-neon-pink hover:text-white ml-1"
+              class="text-neon-pink hover:text-white ml-1 font-bold"
             >
               ×
             </button>
@@ -154,7 +212,7 @@ const copyFromPattern = () => {
             <span class="font-bold pointer-events-none truncate">P{{ p.patternId }}</span>
             <button 
               @click.stop="store.removePlacement(track.id, p.id)"
-              class="text-neon-pink hover:text-white bg-dark-bg/80 w-4 h-4 flex items-center justify-center rounded-full text-[8px]"
+              class="text-neon-pink hover:text-white bg-dark-bg/80 w-4 h-4 flex items-center justify-center rounded-full text-[8px] font-bold"
             >
               ×
             </button>
