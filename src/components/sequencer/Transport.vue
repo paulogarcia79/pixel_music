@@ -97,7 +97,15 @@ onUnmounted(() => {
       ]"
     >
       <div v-if="isRecording" class="w-2 h-2 bg-white rounded-full"></div>
-      {{ isRecording ? 'Recording...' : 'Record Audio' }}
+      {{ isRecording ? 'Recording...' : 'Record' }}
+    </button>
+
+    <button 
+      @click="AudioEngine.exportAudioOffline()"
+      class="px-4 py-2 border border-neon-cyan text-neon-cyan text-[10px] uppercase hover:bg-neon-cyan hover:text-dark-bg transition-all mr-2"
+      title="Render full song to WAV instantly"
+    >
+      Render WAV
     </button>
 
     <button 

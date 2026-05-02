@@ -140,8 +140,8 @@ export class AudioEngine {
     
     Tone.Transport.scheduleRepeat((time) => {
       const totalSteps = Tone.Transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds();
-      const stepInBar = (Math.round(totalSteps) % 16) + 1;
-      const totalBars = Math.floor(Math.round(totalSteps) / 16);
+      const stepInBar = (Math.round(totalSteps) % 32) + 1;
+      const totalBars = Math.floor(Math.round(totalSteps) / 32);
       
       let patternId = store.currentPatternId;
       if (store.isSongMode) {
@@ -243,5 +243,135 @@ export class AudioEngine {
 
   public static getLastPlayedNote(): string | null {
     return this.lastPlayedNote;
+  }
+
+  public static async exportAudioOffline(): Promise<void> {
+    await Tone.start();
+    const store = useSequencerStore();
+    const secondsPerStep = Tone.Time('16n').toSeconds();
+    
+    // Calculate total duration based on song mode or single pattern
+    const numPatterns = store.isSongMode ? store.songSequence.length : 1;
+    const duration = numPatterns * 32 * secondsPerStep + 3; // +3 seconds for reverb/delay tails
+
+    const buffer = await Tone.Offline(({ transport }) => {
+      // Recreate master chain for offline context
+      const masterLimiter = new Tone.Limiter(-1).toDestination();
+      const masterCompressor = new Tone.Compressor({
+        threshold: -12, ratio: 4, attack: 0.003, release: 0.25
+      }).connect(masterLimiter);
+      const masterVolume = new Tone.Volume(0).connect(masterCompressor);
+
+      const synths = new Map<string, TrackNodes>();
+
+      const getOfflineNodes = (trackName: string, type: InstrumentType) => {
+        const existing = synths.get(trackName);
+        if (existing && existing.currentType !== type) {
+          existing.synth.dispose();
+          existing.synth = AudioEngine.createSynthByType(type, existing.delay);
+          existing.currentType = type;
+          return existing;
+        }
+        if (existing) return existing;
+
+        const reverb = new Tone.Reverb({ decay: 1.5, wet: 0 }).connect(masterVolume);
+        const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
+        const synth = AudioEngine.createSynthByType(type, delay);
+        
+        synth.volume.value = -16;
+        const nodes = { synth, reverb, delay, currentType: type };
+        synths.set(trackName, nodes);
+        return nodes;
+      };
+
+      transport.scheduleRepeat((time) => {
+        const totalSteps = transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds();
+        const stepInBar = (Math.round(totalSteps) % 32) + 1;
+        const totalBars = Math.floor(Math.round(totalSteps) / 32);
+        
+        let patternId = store.currentPatternId;
+        if (store.isSongMode && store.songSequence.length > 0) {
+          patternId = store.songSequence[totalBars % store.songSequence.length];
+        }
+
+        const currentPattern = store.patterns[patternId];
+        if (!currentPattern) return;
+
+        currentPattern.tracks.forEach(track => {
+          if (track.muted) return;
+          const note = track.notes[stepInBar];
+          if (note) {
+            const nodes = getOfflineNodes(track.name, track.type);
+            nodes.synth.volume.setValueAtTime(track.volume - 6, time);
+            nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
+            nodes.delay.wet.setValueAtTime(track.delayWet, time);
+
+            if (track.type === 'noise' || track.type === 'snare' || track.type === 'hihat') {
+              (nodes.synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
+            } else if (track.type === 'kick') {
+              (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
+            } else {
+              nodes.synth.triggerAttackRelease(note, '16n', time);
+            }
+          }
+        });
+      }, '16n');
+
+      transport.start(0);
+    }, duration);
+
+    // Convert buffer to WAV Blob
+    const wavBlob = await this.bufferToWav(buffer);
+    const url = URL.createObjectURL(wavBlob);
+    const a = document.createElement('a');
+    a.download = `pixel_music_export_${Date.now()}.wav`;
+    a.href = url;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private static async bufferToWav(buffer: Tone.ToneAudioBuffer): Promise<Blob> {
+    const audioBuffer = buffer.get();
+    if (!audioBuffer) throw new Error("Audio buffer is empty");
+    
+    const numOfChan = audioBuffer.numberOfChannels,
+          length = audioBuffer.length * numOfChan * 2 + 44,
+          bufferData = new ArrayBuffer(length),
+          view = new DataView(bufferData);
+          
+    let channels = [], i, sample, offset = 0, pos = 0;
+
+    const setUint16 = (data: number) => { view.setUint16(pos, data, true); pos += 2; };
+    const setUint32 = (data: number) => { view.setUint32(pos, data, true); pos += 4; };
+
+    setUint32(0x46464952); // "RIFF"
+    setUint32(length - 8); // file length - 8
+    setUint32(0x45564157); // "WAVE"
+    setUint32(0x20746d66); // "fmt " chunk
+    setUint32(16); // length = 16
+    setUint16(1); // PCM (uncompressed)
+    setUint16(numOfChan);
+    setUint32(audioBuffer.sampleRate);
+    setUint32(audioBuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+    setUint16(numOfChan * 2); // block-align
+    setUint16(16); // 16-bit
+
+    setUint32(0x61746164); // "data" - chunk
+    setUint32(length - pos - 4); // chunk length
+
+    for(i = 0; i < audioBuffer.numberOfChannels; i++)
+      channels.push(audioBuffer.getChannelData(i));
+
+    while(pos < length) {
+      for(i = 0; i < numOfChan; i++) {
+        sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+        sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; // scale to 16-bit signed int
+        view.setInt16(pos, sample, true); // write 16-bit sample
+        pos += 2;
+      }
+      offset++
+    }
+
+    return new Blob([bufferData], { type: "audio/wav" });
   }
 }

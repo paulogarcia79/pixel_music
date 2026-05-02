@@ -7,7 +7,7 @@ import { AudioEngine } from './audio/AudioEngine';
 
 const store = useSequencerStore();
 
-const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell', 'kick', 'snare', 'hihat'];
+const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell', 'kick', 'snare', 'hihat', 'pulse', 'pwm', 'bass_synth', 'lead_synth', 'pad', 'tom', 'clap', 'crash'];
 
 const addTrack = () => {
   const newTrackName = `Track ${store.currentTracks.length + 1}`;
