@@ -316,26 +316,22 @@ export class AudioEngine {
       const masterVolume = new Tone.Volume(0).connect(masterCompressor);
 
       const synths = new Map<string, TrackNodes>();
+      const getOfflineNodesKey = (trackName: string, type: InstrumentType) => `${trackName}_${type}`;
 
-      const getOfflineNodes = (trackName: string, type: InstrumentType) => {
-        const existing = synths.get(trackName);
-        if (existing && existing.currentType !== type) {
-          existing.synth.dispose();
-          existing.synth = AudioEngine.createSynthByType(type, existing.delay);
-          existing.currentType = type;
-          return existing;
-        }
-        if (existing) return existing;
-
-        const reverb = new Tone.Reverb({ decay: 1.5, wet: 0 }).connect(masterVolume);
-        const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
-        const synth = AudioEngine.createSynthByType(type, delay);
-        
-        synth.volume.value = -16;
-        const nodes = { synth, reverb, delay, currentType: type };
-        synths.set(trackName, nodes);
-        return nodes;
-      };
+      // Pre-create all necessary synths for offline context
+      Object.values(store.patterns).forEach(pattern => {
+        pattern.tracks.forEach(track => {
+          const type = track.type;
+          const key = getOfflineNodesKey(track.name, type);
+          if (!synths.has(key)) {
+            const reverb = new Tone.Reverb({ decay: 1.5, wet: 0 }).connect(masterVolume);
+            const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
+            const synth = AudioEngine.createSynthByType(type, delay);
+            synth.volume.value = -16;
+            synths.set(key, { synth, reverb, delay, currentType: type });
+          }
+        });
+      });
 
       let stepCounter = 0;
       let sequenceIndex = 0;
@@ -354,16 +350,19 @@ export class AudioEngine {
 
         currentPattern.tracks.forEach(track => {
           if (track.muted) return;
+
           const note = track.notes[stepInBar];
           if (note) {
-            const nodes = getOfflineNodes(track.name, track.type);
+            const nodes = synths.get(getOfflineNodesKey(track.name, track.type));
+            if (!nodes) return;
+
             nodes.synth.volume.setValueAtTime(track.volume - 6, time);
             nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
             nodes.delay.wet.setValueAtTime(track.delayWet, time);
 
-            if (track.type === 'noise' || track.type === 'snare' || track.type === 'hihat') {
+            if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) {
               (nodes.synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
-            } else if (track.type === 'kick') {
+            } else if (['kick', 'tom'].includes(track.type)) {
               (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
             } else {
               nodes.synth.triggerAttackRelease(note, '16n', time);
