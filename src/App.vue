@@ -53,12 +53,12 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
           </div>
         </div>
         
-        <div class="flex flex-wrap gap-1 mb-4">
+        <div class="grid grid-cols-8 gap-1 mb-4">
           <button 
             v-for="p in 16" 
             :key="p"
             @click="store.setPattern(p)"
-            class="px-1.5 py-0.5 text-[8px] border transition-all flex-1 min-w-[20px]"
+            class="py-1 text-[8px] border transition-all text-center"
             :class="store.currentPatternId === p ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d]' : (store.patterns[p] ? 'border-neon-cyan text-neon-cyan' : 'border-grid-line text-neon-cyan/30 hover:border-neon-cyan/50')"
           >
             P{{ p }}
