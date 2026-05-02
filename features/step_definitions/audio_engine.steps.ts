@@ -4,22 +4,20 @@ import { AudioEngine } from '../../src/audio/AudioEngine';
 
 // Mock de Tone.js para el entorno de pruebas
 vi.mock('tone', () => {
-  class SynthMock {
-    toDestination() {
-      return this;
-    }
+  class GenericMock {
+    toDestination() { return this; }
+    connect() { return this; }
     triggerAttackRelease() {}
-  }
-  class NoiseSynthMock {
-    toDestination() {
-      return this;
-    }
-    triggerAttackRelease() {}
+    dispose() {}
+    volume = { value: 0 };
+    wet = { value: 0 };
   }
   return {
-    Synth: SynthMock,
-    NoiseSynth: NoiseSynthMock,
-    start: vi.fn(),
+    Synth: class extends GenericMock {},
+    NoiseSynth: class extends GenericMock {},
+    Reverb: class extends GenericMock {},
+    FeedbackDelay: class extends GenericMock {},
+    start: vi.fn().mockResolvedValue(undefined),
     Transport: {
       scheduleRepeat: vi.fn(),
       start: vi.fn(),
@@ -30,7 +28,10 @@ vi.mock('tone', () => {
     },
     Time: vi.fn(() => ({
       toSeconds: () => 0.25
-    }))
+    })),
+    Draw: {
+      schedule: vi.fn((f) => f())
+    }
   };
 });
 

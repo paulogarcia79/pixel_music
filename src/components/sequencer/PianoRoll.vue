@@ -12,6 +12,10 @@ const isNoteActive = (trackName: string, step: number, note: string) => {
   return store.getNoteAt(trackName, step) === note;
 };
 
+const getGhostNotes = (step: number, note: string) => {
+  return store.tracks.filter(t => t.name !== store.selectedTrackName && t.patterns[store.currentPatternId]?.[step] === note);
+};
+
 const toggleNote = (step: number, note: string) => {
   const trackName = store.selectedTrackName;
   const track = store.tracks.find(t => t.name === trackName);
@@ -72,6 +76,13 @@ store.ensureTrackExists(store.selectedTrackName);
         >
           <!-- Efecto de brillo si está activa -->
           <div v-if="isNoteActive(store.selectedTrackName, step, note)" class="absolute inset-0 animate-pulse bg-white/20"></div>
+          
+          <!-- Ghost Notes de otras pistas -->
+          <div 
+            v-if="!isNoteActive(store.selectedTrackName, step, note) && getGhostNotes(step, note).length > 0"
+            class="absolute inset-[4px] border border-neon-cyan/40 bg-neon-cyan/10 rounded-sm"
+            :title="getGhostNotes(step, note).map(t => t.name).join(', ')"
+          ></div>
         </div>
       </template>
     </div>
