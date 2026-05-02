@@ -31,9 +31,10 @@ const toggleRecord = async () => {
 const exportProject = () => {
   const data = {
     patterns: store.patterns,
+    arrangerTracks: store.arrangerTracks,
     bpm: store.bpm,
-    songSequence: store.songSequence,
-    version: "0.2.0"
+    isSongMode: store.isSongMode,
+    version: "0.3.0"
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);

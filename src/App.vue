@@ -146,6 +146,17 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
                   <input type="range" min="0" max="1" step="0.01" :value="track.delayWet" @input="(e) => store.setTrackDelay(track.name, Number((e.target as HTMLInputElement).value))" class="accent-neon-cyan h-0.5 bg-grid-line appearance-none cursor-pointer" />
                 </div>
               </div>
+
+              <div class="flex gap-4 pt-1 border-t border-grid-line/30" @click.stop>
+                <div class="flex-1 flex flex-col gap-1">
+                  <span class="text-[7px] text-white uppercase opacity-60">Attack</span>
+                  <input type="range" min="0.001" max="2" step="0.01" :value="track.attack" @input="(e) => store.setTrackADSR(track.name, Number((e.target as HTMLInputElement).value), track.release)" class="accent-white h-0.5 bg-grid-line appearance-none cursor-pointer" />
+                </div>
+                <div class="flex-1 flex flex-col gap-1">
+                  <span class="text-[7px] text-white uppercase opacity-60">Release</span>
+                  <input type="range" min="0.01" max="4" step="0.01" :value="track.release" @input="(e) => store.setTrackADSR(track.name, track.attack, Number((e.target as HTMLInputElement).value))" class="accent-white h-0.5 bg-grid-line appearance-none cursor-pointer" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -168,7 +179,10 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
     <!-- Footer / Status Bar -->
     <footer class="bg-dark-bg border-t border-grid-line px-4 py-1 flex justify-between items-center text-[9px] text-neon-cyan/40 uppercase tracking-widest">
       <div>Status: {{ store.isSongMode ? 'SONG MODE ACTIVE' : 'PATTERN MODE' }}</div>
-      <div>Pattern: {{ store.currentPatternId }} | Step: {{ store.currentStep }}</div>
+      <div>
+        <span v-if="!store.isSongMode">Pattern: {{ store.currentPatternId }} | Step: {{ store.currentStep }}</span>
+        <span v-else>Global Step: {{ store.globalStep }}</span>
+      </div>
       <div>Project: PIXEL_COMP_01</div>
     </footer>
   </div>

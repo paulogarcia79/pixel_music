@@ -11,11 +11,25 @@ export interface TrackInstance {
   reverbWet: number;
   delayWet: number;
   muted: boolean;
+  attack: number;
+  release: number;
 }
 
 export interface Pattern {
-  tracks: TrackInstance[];
   gridSize: number;
+  tracks: TrackInstance[];
+}
+
+export interface PatternPlacement {
+  id: string;
+  patternId: number;
+  startStep: number;
+}
+
+export interface ArrangerTrack {
+  id: number;
+  name: string;
+  placements: PatternPlacement[];
 }
 
 export const useSequencerStore = defineStore('sequencer', {
@@ -31,16 +45,21 @@ export const useSequencerStore = defineStore('sequencer', {
             volume: -10,
             reverbWet: 0.1,
             delayWet: 0.1,
-            muted: false
+            muted: false,
+            attack: 0.01,
+            release: 0.5
           }
         ]
       }
     } as Record<number, Pattern>,
+    arrangerTracks: [
+      { id: 1, name: 'Seq 1', placements: [] }
+    ] as ArrangerTrack[],
     bpm: 120,
     currentStep: 0,
+    globalStep: 0,
     selectedTrackName: 'Track 1',
     currentPatternId: 1,
-    songSequence: [1], // Sequence of patterns to play
     currentSequenceIndex: 0,
     isSongMode: false,
   }),
@@ -64,7 +83,9 @@ export const useSequencerStore = defineStore('sequencer', {
         volume: -10,
         reverbWet: 0.1,
         delayWet: 0.1,
-        muted: false
+        muted: false,
+        attack: 0.01,
+        release: 0.5
       };
     },
     addTrack(name: string, type: InstrumentType = 'square') {
@@ -109,6 +130,13 @@ export const useSequencerStore = defineStore('sequencer', {
       const track = this.getTrackInPattern(trackName);
       if (track) track.type = type;
     },
+    setTrackADSR(trackName: string, attack: number, release: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) {
+        track.attack = attack;
+        track.release = release;
+      }
+    },
     setTrackReverb(trackName: string, value: number) {
       const track = this.getTrackInPattern(trackName);
       if (track) track.reverbWet = value;
@@ -139,31 +167,30 @@ export const useSequencerStore = defineStore('sequencer', {
     },
     clearAll() {
       this.patterns = {
-        1: {
-          gridSize: 32,
-          tracks: [this.createDefaultTrack('Track 1')]
-        }
+        1: { gridSize: 32, tracks: [this.createDefaultTrack('Track 1')] }
       };
+      this.arrangerTracks = [{ id: 1, name: 'Seq 1', placements: [] }];
       this.currentPatternId = 1;
-      this.songSequence = [1];
-      this.currentSequenceIndex = 0;
+      this.globalStep = 0;
       this.selectedTrackName = 'Track 1';
+      this.isSongMode = false;
     },
     loadProject(data: any) {
       if (data.patterns) {
         this.patterns = data.patterns;
-        // Migration: ensure gridSize exists
         Object.values(this.patterns).forEach(p => {
           if (!p.gridSize) p.gridSize = 32;
+          p.tracks.forEach(t => {
+            if (t.attack === undefined) t.attack = 0.01;
+            if (t.release === undefined) t.release = 0.5;
+          });
         });
-      } else if (data.tracks) {
-        // Migration from very old format
-        this.patterns = {
-          1: { gridSize: 32, tracks: data.tracks }
-        };
       }
       if (data.bpm) this.setBpm(data.bpm);
-      if (data.songSequence) this.songSequence = data.songSequence;
+      if (data.arrangerTracks) {
+        this.arrangerTracks = data.arrangerTracks;
+      }
+      this.isSongMode = !!data.isSongMode;
     },
     setPattern(id: number) {
       this.currentPatternId = id;
@@ -173,15 +200,45 @@ export const useSequencerStore = defineStore('sequencer', {
           tracks: [this.createDefaultTrack('Track 1')]
         };
       }
-      // Select first track of the new pattern
       if (this.patterns[id].tracks.length > 0) {
         this.selectedTrackName = this.patterns[id].tracks[0].name;
+      }
+    },
+    duplicatePattern(sourceId: number, targetId: number) {
+      if (this.patterns[sourceId]) {
+        this.patterns[targetId] = JSON.parse(JSON.stringify(this.patterns[sourceId]));
+      }
+    },
+    addArrangerTrack() {
+      const id = Math.max(0, ...this.arrangerTracks.map(t => t.id)) + 1;
+      this.arrangerTracks.push({ id, name: `Seq ${id}`, placements: [] });
+    },
+    removeArrangerTrack(id: number) {
+      if (this.arrangerTracks.length > 1) {
+        this.arrangerTracks = this.arrangerTracks.filter(t => t.id !== id);
+      } else {
+        this.arrangerTracks[0].placements = [];
+      }
+    },
+    addPlacement(arrangerTrackId: number, patternId: number, startStep: number) {
+      const track = this.arrangerTracks.find(t => t.id === arrangerTrackId);
+      if (track) {
+        track.placements.push({
+          id: Date.now().toString() + Math.random().toString(),
+          patternId,
+          startStep
+        });
+      }
+    },
+    removePlacement(arrangerTrackId: number, placementId: string) {
+      const track = this.arrangerTracks.find(t => t.id === arrangerTrackId);
+      if (track) {
+        track.placements = track.placements.filter(p => p.id !== placementId);
       }
     },
     setGridSize(size: number) {
       if (this.currentPattern) {
         this.currentPattern.gridSize = size;
-        // Clean up notes outside the new grid size
         this.currentPattern.tracks.forEach(track => {
           Object.keys(track.notes).forEach(step => {
             if (parseInt(step) > size) {
@@ -190,18 +247,6 @@ export const useSequencerStore = defineStore('sequencer', {
           });
         });
       }
-    },
-    duplicatePattern(sourceId: number, targetId: number) {
-      if (this.patterns[sourceId]) {
-        this.patterns[targetId] = JSON.parse(JSON.stringify(this.patterns[sourceId]));
-      }
-    },
-    addToSequence(patternId: number) {
-      this.songSequence.push(patternId);
-    },
-    removeFromSequence(index: number) {
-      this.songSequence.splice(index, 1);
-      if (this.songSequence.length === 0) this.songSequence = [1];
     },
     clearCurrentPattern() {
       if (this.currentPattern) {

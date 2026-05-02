@@ -3,9 +3,8 @@ import { useSequencerStore, type InstrumentType } from '../stores/sequencer';
 
 interface TrackNodes {
   synth: any;
-  reverb: Tone.Reverb;
-  delay: Tone.FeedbackDelay;
-  currentType: InstrumentType;
+  reverb: any;
+  delay: any;
 }
 
 export class AudioEngine {
@@ -21,229 +20,116 @@ export class AudioEngine {
   public static async initialize() {
     if (!this.initialized) {
       await Tone.start();
-      
       this.masterLimiter = new Tone.Limiter(-1).toDestination();
-      
       this.analyser = new Tone.Waveform(256);
       this.recorder = new Tone.Recorder();
-      
-      this.masterCompressor = new Tone.Compressor({
-        threshold: -12,
-        ratio: 4,
-        attack: 0.003,
-        release: 0.25
-      }).connect(this.masterLimiter);
-      
-      // Connect master to analyser and recorder
+      this.masterCompressor = new Tone.Compressor({ threshold: -12, ratio: 4, attack: 0.003, release: 0.25 }).connect(this.masterLimiter);
       this.masterCompressor.fan(this.analyser, this.recorder);
-      
       this.masterVolume = new Tone.Volume(0).connect(this.masterCompressor);
-      
       this.initialized = true;
       this.setupLoop();
     }
   }
 
-  public static getAnalyser() {
-    return this.analyser;
-  }
-
-  public static async startRecording() {
-    await this.initialize();
-    this.recorder.start();
-  }
-
+  public static getAnalyser() { return this.initialized ? this.analyser : null; }
+  public static async startRecording() { await this.initialize(); this.recorder.start(); }
   public static async stopRecording() {
     const blob = await this.recorder.stop();
     const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.download = "pixel_music_render.webm";
-    anchor.href = url;
-    anchor.click();
+    const a = document.createElement("a"); a.download = "pixel_live_capture.webm"; a.href = url; a.click();
   }
 
-  private static createSynthByType(type: InstrumentType, dest: Tone.ToneAudioNode): any {
-    const synthOptions: any = {
-      kick: () => new Tone.MembraneSynth({ 
-        pitchDecay: 0.05, octaves: 10, oscillator: { type: 'sine' },
-        envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 }
-      }),
-      snare: () => new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 }
-      }),
-      hihat: () => new Tone.NoiseSynth({
-        noise: { type: 'pink' },
-        envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
-      }),
-      clap: () => new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 0.3, sustain: 0, release: 0.1 }
-      }),
-      crash: () => new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 1.5, sustain: 0, release: 0.5 }
-      }),
-      tom: () => new Tone.MembraneSynth({
-        pitchDecay: 0.1, octaves: 4, oscillator: { type: 'square' },
-        envelope: { attack: 0.01, decay: 0.4, sustain: 0.01, release: 1.4 }
-      }),
-      bass_synth: () => new Tone.FMSynth({
-        harmonicity: 0.5, modulationIndex: 5,
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 }
-      }),
-      lead_synth: () => new Tone.Synth({
-        oscillator: { type: 'sawtooth' },
-        envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 }
-      }),
-      pad: () => new Tone.Synth({
-        oscillator: { type: 'sine' },
-        envelope: { attack: 0.5, decay: 0.5, sustain: 1, release: 2 }
-      }),
-      noise: () => new Tone.NoiseSynth({ 
-        envelope: { attack: 0.005, decay: 0.1, sustain: 0.0 } 
-      }),
-      sine: () => new Tone.Synth({ 
-        oscillator: { type: 'sine' }, 
-        envelope: { attack: 0.05, release: 1 } 
-      }),
-      pulse: () => new Tone.Synth({ 
-        oscillator: { type: 'pulse' }, 
-        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
-      }),
-      pwm: () => new Tone.Synth({ 
-        oscillator: { type: 'pwm' }, 
-        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
-      }),
-      fm_pluck: () => new Tone.FMSynth({ 
-        modulationIndex: 10, 
-        envelope: { attack: 0.001, decay: 0.2, sustain: 0.1 } 
-      }),
-      fm_bell: () => new Tone.FMSynth({ 
-        harmonicity: 3, modulationIndex: 15, 
-        envelope: { attack: 0.01, decay: 1, sustain: 0 } 
-      }),
-      default: (t: any) => new Tone.Synth({ 
-        oscillator: { type: t }, 
-        envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
-      })
-    };
-
-    const builder = synthOptions[type] || (() => synthOptions.default(type));
-    return builder().connect(dest);
-  }
-
-  private static getOrCreateNodesForTrack(trackName: string, type: InstrumentType): TrackNodes {
-    const existing = this.trackNodes.get(trackName);
-    
-    if (existing && existing.currentType !== type) {
-      existing.synth.dispose();
-      existing.synth = this.createSynthByType(type, existing.delay);
-      existing.currentType = type;
-      return existing;
+  private static createSynthByType(type: InstrumentType, dest: Tone.ToneAudioNode, context: Tone.BaseContext): any {
+    const common = { context };
+    let synth: any;
+    switch (type) {
+      case 'kick': synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.05, octaves: 10, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 } }); break;
+      case 'snare': synth = new Tone.NoiseSynth({ ...common, envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 } }); break;
+      case 'hihat': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'pink' }, envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 } }); break;
+      case 'clap': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }); break;
+      case 'crash': synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 1.0, sustain: 0, release: 1.0 } }); break;
+      case 'tom': synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.1, octaves: 4, envelope: { attack: 0.01, decay: 0.4, sustain: 0.01, release: 1.4 } }); break;
+      case 'bass_synth': synth = new Tone.FMSynth({ ...common, harmonicity: 0.5, modulationIndex: 5, envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 } }); break;
+      case 'lead_synth': synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } }); break;
+      case 'pad': synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, release: 2 } }); break;
+      default: synth = new Tone.Synth({ ...common, oscillator: { type: type as any }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } });
     }
+    return synth.connect(dest);
+  }
 
+  private static getOrCreateLiveNodes(key: string, type: InstrumentType): TrackNodes {
+    const existing = this.trackNodes.get(key);
+    const context = Tone.getContext();
     if (existing) return existing;
-
-    const reverb = new Tone.Reverb({ decay: 1.5, wet: 0 }).connect(this.masterVolume);
-    const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
-    const synth = this.createSynthByType(type, delay);
-    
-    // Set initial volume to avoid 0dB burst
-    synth.volume.value = -16;
-
-    const nodes = { synth, reverb, delay, currentType: type };
-    this.trackNodes.set(trackName, nodes);
+    const reverb = new Tone.Freeverb({ context, roomSize: 0.7, dampening: 4000 }).connect(this.masterVolume);
+    const delay = new Tone.FeedbackDelay({ context, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
+    const synth = this.createSynthByType(type, delay, context);
+    const nodes = { synth, reverb, delay };
+    this.trackNodes.set(key, nodes);
     return nodes;
   }
 
-  public static resetSynth(trackName: string) {
-    if (this.trackNodes.has(trackName)) {
-      const nodes = this.trackNodes.get(trackName)!;
-      nodes.synth.dispose();
-      nodes.reverb.dispose();
-      nodes.delay.dispose();
-      this.trackNodes.delete(trackName);
+  public static resetSynth(trackKey: string) {
+    if (this.trackNodes.has(trackKey)) {
+      const nodes = this.trackNodes.get(trackKey)!;
+      nodes.synth.dispose(); nodes.reverb.dispose(); nodes.delay.dispose();
+      this.trackNodes.delete(trackKey);
     }
   }
 
-  private static stepCounter = 0;
-  private static sequenceIndex = 0;
-
   private static setupLoop() {
     const store = useSequencerStore();
-    
     Tone.Transport.scheduleRepeat((time) => {
-      let patternId = store.currentPatternId;
-      if (store.isSongMode && store.songSequence.length > 0) {
-        patternId = store.songSequence[this.sequenceIndex];
+      const globalStep = Math.round(Tone.Transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds());
+      let active: { patternId: number, stepInPattern: number, arrangerTrackId: number }[] = [];
+      if (store.isSongMode) {
+        let maxStep = 32;
+        store.arrangerTracks.forEach(t => t.placements.forEach(p => {
+          const s = store.patterns[p.patternId]?.gridSize || 32; if (p.startStep + s > maxStep) maxStep = p.startStep + s;
+        }));
+        const currentGlobalStep = globalStep % maxStep;
+        Tone.Draw.schedule(() => { store.globalStep = currentGlobalStep; store.setCurrentStep(0); }, time);
+        store.arrangerTracks.forEach(t => t.placements.forEach(p => {
+          const s = store.patterns[p.patternId]?.gridSize || 32;
+          if (currentGlobalStep >= p.startStep && currentGlobalStep < p.startStep + s) active.push({ patternId: p.patternId, stepInPattern: (currentGlobalStep - p.startStep) + 1, arrangerTrackId: t.id });
+        }));
+      } else {
+        const pId = store.currentPatternId; const s = store.patterns[pId]?.gridSize || 32;
+        const currentStep = (globalStep % s) + 1;
+        Tone.Draw.schedule(() => { store.setCurrentStep(currentStep); store.globalStep = 0; }, time);
+        active.push({ patternId: pId, stepInPattern: currentStep, arrangerTrackId: 0 });
       }
 
-      const currentPattern = store.patterns[patternId];
-      if (!currentPattern) return;
-
-      const gridSize = currentPattern.gridSize || 32;
-      const stepInBar = this.stepCounter + 1;
-      const currentSeqIndex = this.sequenceIndex;
-
-      Tone.Draw.schedule(() => {
-        store.setCurrentStep(stepInBar);
-        if (store.isSongMode) {
-          store.currentSequenceIndex = currentSeqIndex;
-          store.currentPatternId = patternId; // follow sequence
-        }
-      }, time);
-
-      currentPattern.tracks.forEach(track => {
-        if (track.muted) return;
-
-        const note = track.notes[stepInBar];
-        if (note) {
-          const nodes = this.getOrCreateNodesForTrack(track.name, track.type);
-          
-          nodes.synth.volume.setValueAtTime(track.volume - 6, time);
-          nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
-          nodes.delay.wet.setValueAtTime(track.delayWet, time);
-
-          if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) {
-            (nodes.synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
-          } else if (['kick', 'tom'].includes(track.type)) {
-            (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
-          } else {
-            nodes.synth.triggerAttackRelease(note, '16n', time);
+      active.forEach(({ patternId, stepInPattern, arrangerTrackId }) => {
+        const pattern = store.patterns[patternId]; if (!pattern) return;
+        pattern.tracks.forEach(track => {
+          if (track.muted) return;
+          const note = track.notes[stepInPattern];
+          if (note) {
+            const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
+            if (nodes.synth.envelope) {
+              nodes.synth.envelope.attack = track.attack;
+              nodes.synth.envelope.release = track.release;
+            }
+            nodes.synth.volume.setValueAtTime(track.volume - 6, time);
+            nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
+            nodes.delay.wet.setValueAtTime(track.delayWet, time);
+            if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) nodes.synth.triggerAttackRelease('16n', time);
+            else nodes.synth.triggerAttackRelease(note, '16n', time);
           }
-        }
+        });
       });
-
-      this.stepCounter++;
-      if (this.stepCounter >= gridSize) {
-        this.stepCounter = 0;
-        if (store.isSongMode && store.songSequence.length > 0) {
-          this.sequenceIndex = (this.sequenceIndex + 1) % store.songSequence.length;
-        }
-      }
     }, '16n');
   }
 
   public static async toggle() {
     await this.initialize();
-    
     if (Tone.Transport.state === 'started') {
       Tone.Transport.stop();
       this.masterVolume.volume.rampTo(-Infinity, 0.05);
-      
-      this.trackNodes.forEach(nodes => {
-        if ('releaseAll' in nodes.synth) nodes.synth.releaseAll();
-        else if ('triggerRelease' in nodes.synth) nodes.synth.triggerRelease();
-      });
-      
-      this.stepCounter = 0;
-      this.sequenceIndex = 0;
-      useSequencerStore().setCurrentStep(0);
+      this.trackNodes.forEach(n => n.synth.triggerRelease());
+      useSequencerStore().setCurrentStep(0); useSequencerStore().globalStep = 0;
     } else {
-      this.stepCounter = 0;
-      this.sequenceIndex = 0;
       this.masterVolume.volume.value = 0;
       Tone.Transport.seconds = 0;
       Tone.Transport.start();
@@ -252,188 +138,103 @@ export class AudioEngine {
 
   public static playNote(note: string, duration: string, type: InstrumentType = 'square', trackName: string = 'Preview') {
     this.lastPlayedNote = note;
-    if (!this.initialized) {
-      this.initialize().then(() => {
-        this.triggerSynth(note, duration, type, trackName);
-      });
-      return;
-    }
-    this.triggerSynth(note, duration, type, trackName);
+    this.initialize().then(() => {
+      const context = Tone.getContext();
+      const s = this.createSynthByType(type, context.destination, context);
+      const store = useSequencerStore();
+      const track = store.getTrackInPattern(trackName);
+      if (track && s.envelope) {
+        s.envelope.attack = track.attack;
+        s.envelope.release = track.release;
+      }
+      s.triggerAttackRelease(note, duration);
+      setTimeout(() => s.dispose(), 2000);
+    });
   }
 
-  private static triggerSynth(note: string, duration: string, type: InstrumentType, trackName: string) {
-    const nodes = this.getOrCreateNodesForTrack(trackName, type);
-    
-    const store = useSequencerStore();
-    const track = store.getTrackInPattern(trackName);
-    
-    const time = Tone.now();
-    if (track) {
-      nodes.synth.volume.setValueAtTime(track.volume - 6, time);
-      nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
-      nodes.delay.wet.setValueAtTime(track.delayWet, time);
-    } else {
-      nodes.synth.volume.setValueAtTime(-16, time);
-    }
-
-    if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(type)) {
-      (nodes.synth as Tone.NoiseSynth).triggerAttackRelease(duration, time);
-    } else if (['kick', 'tom'].includes(type)) {
-      (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, duration, time);
-    } else {
-      nodes.synth.triggerAttackRelease(note, duration, time);
-    }
-  }
-
-  public static getLastPlayedNote(): string | null {
-    return this.lastPlayedNote;
-  }
+  public static getLastPlayedNote(): string | null { return this.lastPlayedNote; }
 
   public static async exportAudioOffline(): Promise<void> {
-    await Tone.start();
     const store = useSequencerStore();
-    const secondsPerStep = Tone.Time('16n').toSeconds();
-    
-    // Calculate total duration based on song mode or single pattern
-    let totalStepsToRender = 0;
+    const secondsPerStep = (60 / store.bpm / 4);
+    let maxSongStep = 32;
+    const songData: any[] = [];
+
     if (store.isSongMode) {
-      store.songSequence.forEach(pid => {
-        const p = store.patterns[pid];
-        if (p) totalStepsToRender += (p.gridSize || 32);
-      });
+      store.arrangerTracks.forEach(t => t.placements.forEach(p => {
+        const pattern = store.patterns[p.patternId]; if (!pattern) return;
+        if (p.startStep + pattern.gridSize > maxSongStep) maxSongStep = p.startStep + pattern.gridSize;
+        pattern.tracks.forEach(track => {
+          if (track.muted) return;
+          Object.entries(track.notes).forEach(([step, note]) => {
+            songData.push({ t: (p.startStep + parseInt(step) - 1) * secondsPerStep, n: note, track });
+          });
+        });
+      }));
     } else {
       const p = store.patterns[store.currentPatternId];
-      if (p) totalStepsToRender = (p.gridSize || 32);
-    }
-    const duration = totalStepsToRender * secondsPerStep + 3; // +3 seconds for reverb/delay tails
-
-    const buffer = await Tone.Offline(({ transport }) => {
-      // Recreate master chain for offline context
-      const masterLimiter = new Tone.Limiter(-1).toDestination();
-      const masterCompressor = new Tone.Compressor({
-        threshold: -12, ratio: 4, attack: 0.003, release: 0.25
-      }).connect(masterLimiter);
-      const masterVolume = new Tone.Volume(0).connect(masterCompressor);
-
-      const synths = new Map<string, TrackNodes>();
-      const getOfflineNodesKey = (trackName: string, type: InstrumentType) => `${trackName}_${type}`;
-
-      // Pre-create all necessary synths for offline context
-      Object.values(store.patterns).forEach(pattern => {
-        pattern.tracks.forEach(track => {
-          const type = track.type;
-          const key = getOfflineNodesKey(track.name, type);
-          if (!synths.has(key)) {
-            const reverb = new Tone.Reverb({ decay: 1.5, wet: 0 }).connect(masterVolume);
-            const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
-            const synth = AudioEngine.createSynthByType(type, delay);
-            synth.volume.value = -16;
-            synths.set(key, { synth, reverb, delay, currentType: type });
-          }
-        });
-      });
-
-      let stepCounter = 0;
-      let sequenceIndex = 0;
-
-      transport.scheduleRepeat((time) => {
-        let patternId = store.currentPatternId;
-        if (store.isSongMode && store.songSequence.length > 0) {
-          patternId = store.songSequence[sequenceIndex];
-        }
-
-        const currentPattern = store.patterns[patternId];
-        if (!currentPattern) return;
-
-        const gridSize = currentPattern.gridSize || 32;
-        const stepInBar = stepCounter + 1;
-
-        currentPattern.tracks.forEach(track => {
+      if (p) {
+        maxSongStep = p.gridSize;
+        p.tracks.forEach(track => {
           if (track.muted) return;
-
-          const note = track.notes[stepInBar];
-          if (note) {
-            const nodes = synths.get(getOfflineNodesKey(track.name, track.type));
-            if (!nodes) return;
-
-            nodes.synth.volume.setValueAtTime(track.volume - 6, time);
-            nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
-            nodes.delay.wet.setValueAtTime(track.delayWet, time);
-
-            if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(track.type)) {
-              (nodes.synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
-            } else if (['kick', 'tom'].includes(track.type)) {
-              (nodes.synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
-            } else {
-              nodes.synth.triggerAttackRelease(note, '16n', time);
-            }
-          }
+          Object.entries(track.notes).forEach(([step, note]) => {
+            songData.push({ t: (parseInt(step) - 1) * secondsPerStep, n: note, track });
+          });
         });
+      }
+    }
 
-        stepCounter++;
-        if (stepCounter >= gridSize) {
-          stepCounter = 0;
-          if (store.isSongMode && store.songSequence.length > 0) {
-            sequenceIndex = (sequenceIndex + 1) % store.songSequence.length;
-          }
+    const totalSeconds = (maxSongStep * secondsPerStep) + 3.0;
+    await Tone.start();
+
+    const buffer = await Tone.Offline((context) => {
+      const master = new Tone.Gain({ context: context as any, gain: 1.0 }).toDestination();
+      const synths = new Map();
+
+      songData.forEach(d => {
+        const key = `${d.track.name}_${d.track.type}`;
+        if (!synths.has(key)) {
+          const reverb = new Tone.Freeverb({ context: context as any, roomSize: 0.7, dampening: 4000 }).connect(master);
+          const delay = new Tone.FeedbackDelay({ context: context as any, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
+          const synth = AudioEngine.createSynthByType(d.track.type, delay, context as any);
+          synths.set(key, { synth, reverb, delay });
         }
-      }, '16n');
+        const n = synths.get(key);
+        if (n.synth.envelope) {
+          n.synth.envelope.attack = d.track.attack;
+          n.synth.envelope.release = d.track.release;
+        }
+        n.synth.volume.setValueAtTime(d.track.volume - 6, d.t);
+        n.reverb.wet.setValueAtTime(d.track.reverbWet, d.t);
+        n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
+        
+        if (['noise', 'snare', 'hihat', 'clap', 'crash'].includes(d.track.type)) n.synth.triggerAttackRelease('16n', d.t);
+        else n.synth.triggerAttackRelease(d.n, '16n', d.t);
+      });
+    }, totalSeconds);
 
-      transport.start(0);
-    }, duration);
-
-    // Convert buffer to WAV Blob
     const wavBlob = await this.bufferToWav(buffer);
     const url = URL.createObjectURL(wavBlob);
-    const a = document.createElement('a');
-    a.download = `pixel_music_export_${Date.now()}.wav`;
-    a.href = url;
-    a.click();
-    URL.revokeObjectURL(url);
+    const a = document.createElement('a'); a.download = `pixel_music_final.wav`; a.href = url; a.click();
   }
 
   private static async bufferToWav(buffer: Tone.ToneAudioBuffer): Promise<Blob> {
-    const audioBuffer = buffer.get();
-    if (!audioBuffer) throw new Error("Audio buffer is empty");
-    
-    const numOfChan = audioBuffer.numberOfChannels,
-          length = audioBuffer.length * numOfChan * 2 + 44,
-          bufferData = new ArrayBuffer(length),
-          view = new DataView(bufferData);
-          
-    let channels = [], i, sample, offset = 0, pos = 0;
-
-    const setUint16 = (data: number) => { view.setUint16(pos, data, true); pos += 2; };
-    const setUint32 = (data: number) => { view.setUint32(pos, data, true); pos += 4; };
-
-    setUint32(0x46464952); // "RIFF"
-    setUint32(length - 8); // file length - 8
-    setUint32(0x45564157); // "WAVE"
-    setUint32(0x20746d66); // "fmt " chunk
-    setUint32(16); // length = 16
-    setUint16(1); // PCM (uncompressed)
-    setUint16(numOfChan);
-    setUint32(audioBuffer.sampleRate);
-    setUint32(audioBuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
-    setUint16(numOfChan * 2); // block-align
-    setUint16(16); // 16-bit
-
-    setUint32(0x61746164); // "data" - chunk
-    setUint32(length - pos - 4); // chunk length
-
-    for(i = 0; i < audioBuffer.numberOfChannels; i++)
-      channels.push(audioBuffer.getChannelData(i));
-
-    while(pos < length) {
-      for(i = 0; i < numOfChan; i++) {
-        sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
-        sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; // scale to 16-bit signed int
-        view.setInt16(pos, sample, true); // write 16-bit sample
-        pos += 2;
+    const ab = buffer.get(); if (!ab) throw "Error";
+    const n = ab.numberOfChannels, len = ab.length * n * 2 + 44, data = new ArrayBuffer(len), view = new DataView(data);
+    let offset = 44;
+    const writeS = (o: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+    const write32 = (o: number, v: number) => { view.setUint32(o, v, true); };
+    const write16 = (o: number, v: number) => { view.setUint16(o, v, true); };
+    writeS(0, 'RIFF'); write32(4, len - 8); writeS(8, 'WAVE'); writeS(12, 'fmt '); write32(16, 16);
+    write16(20, 1); write16(22, n); write32(24, ab.sampleRate); write32(28, ab.sampleRate * n * 2);
+    write16(32, n * 2); write16(34, 16); writeS(36, 'data'); write32(40, ab.length * n * 2);
+    const chs = []; for (let i = 0; i < n; i++) chs.push(ab.getChannelData(i));
+    for (let i = 0; i < ab.length; i++) {
+      for (let c = 0; c < n; c++) {
+        let v = Math.max(-1, Math.min(1, chs[c][i]));
+        view.setInt16(offset, v < 0 ? v * 0x8000 : v * 0x7FFF, true); offset += 2;
       }
-      offset++
     }
-
-    return new Blob([bufferData], { type: "audio/wav" });
+    return new Blob([data], { type: 'audio/wav' });
   }
 }
