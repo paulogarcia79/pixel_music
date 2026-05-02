@@ -13,18 +13,20 @@ const isNoteActive = (trackName: string, step: number, note: string) => {
 };
 
 const getGhostNotes = (step: number, note: string) => {
-  return store.tracks.filter(t => t.name !== store.selectedTrackName && t.patterns[store.currentPatternId]?.[step] === note);
+  return store.currentTracks.filter(t => t.name !== store.selectedTrackName && t.notes[step] === note);
 };
 
 const toggleNote = (step: number, note: string) => {
   const trackName = store.selectedTrackName;
-  const track = store.tracks.find(t => t.name === trackName);
+  const track = store.getTrackInPattern(trackName);
   
   if (isNoteActive(trackName, step, note)) {
     store.removeNote(trackName, step);
   } else {
     store.addNote(trackName, step, note);
-    AudioEngine.playNote(note, '16n', track?.type);
+    if (track) {
+      AudioEngine.playNote(note, '16n', track.type, trackName);
+    }
   }
 };
 
@@ -33,8 +35,8 @@ store.ensureTrackExists(store.selectedTrackName);
 </script>
 
 <template>
-  <div class="flex-1 overflow-auto bg-dark-bg p-8">
-    <div class="relative inline-grid grid-cols-[80px_repeat(16,minmax(40px,1fr))] border border-grid-line shadow-[0_0_30px_rgba(26,26,58,1)]">
+  <div class="flex-1 overflow-auto bg-dark-bg p-4 md:p-8">
+    <div class="relative grid grid-cols-[80px_repeat(16,minmax(0,1fr))] w-full border border-grid-line shadow-[0_0_30px_rgba(26,26,58,1)]">
       
       <!-- Línea Láser (Cursor de reproducción) -->
       <div 
@@ -50,7 +52,7 @@ store.ensureTrackExists(store.selectedTrackName);
       <div 
         v-for="step in steps" 
         :key="step" 
-        class="text-[10px] text-center border-r border-b border-grid-line py-1 transition-colors"
+        class="text-[10px] text-center border-r border-b border-grid-line py-1 transition-colors overflow-hidden"
         :class="[
           store.currentStep === step ? 'text-neon-cyan bg-neon-cyan/20' : 'text-neon-cyan/50'
         ]"
@@ -60,14 +62,14 @@ store.ensureTrackExists(store.selectedTrackName);
 
       <!-- Filas de notas -->
       <template v-for="note in notes" :key="note">
-        <div class="bg-dark-bg border-r border-b border-grid-line px-4 py-2 text-xs font-bold text-neon-cyan whitespace-nowrap">
+        <div class="bg-dark-bg border-r border-b border-grid-line px-2 md:px-4 py-2 text-[10px] md:text-xs font-bold text-neon-cyan whitespace-nowrap">
           {{ note }}
         </div>
         <div 
           v-for="step in steps" 
           :key="step"
           @click="toggleNote(step, note)"
-          class="border-r border-b border-grid-line cursor-pointer transition-colors relative"
+          class="border-r border-b border-grid-line cursor-pointer transition-colors relative min-h-[30px]"
           :class="[
             isNoteActive(store.selectedTrackName, step, note) 
               ? 'bg-neon-pink shadow-[inset_0_0_10px_rgba(255,42,109,0.8)]' 

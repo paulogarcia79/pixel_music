@@ -3,17 +3,37 @@ import * as Tone from 'tone';
 
 export type InstrumentType = 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'fm_pluck' | 'fm_bell' | 'kick' | 'snare' | 'hihat';
 
-interface Track {
+export interface TrackInstance {
   name: string;
-  patterns: Record<number, Record<number, string>>; // patternId -> step -> note
+  notes: Record<number, string>; // step -> note
   type: InstrumentType;
   volume: number;
+  reverbWet: number;
+  delayWet: number;
   muted: boolean;
+}
+
+export interface Pattern {
+  tracks: TrackInstance[];
 }
 
 export const useSequencerStore = defineStore('sequencer', {
   state: () => ({
-    tracks: [] as Track[],
+    patterns: {
+      1: {
+        tracks: [
+          {
+            name: 'Track 1',
+            notes: {},
+            type: 'square' as InstrumentType,
+            volume: -10,
+            reverbWet: 0.1,
+            delayWet: 0.1,
+            muted: false
+          }
+        ]
+      }
+    } as Record<number, Pattern>,
     bpm: 120,
     currentStep: 0,
     selectedTrackName: 'Track 1',
@@ -22,6 +42,10 @@ export const useSequencerStore = defineStore('sequencer', {
     currentSequenceIndex: 0,
     isSongMode: false,
   }),
+  getters: {
+    currentPattern: (state) => state.patterns[state.currentPatternId],
+    currentTracks: (state) => state.patterns[state.currentPatternId]?.tracks || [],
+  },
   actions: {
     setCurrentStep(step: number) {
       this.currentStep = step;
@@ -30,104 +54,126 @@ export const useSequencerStore = defineStore('sequencer', {
       this.bpm = val;
       Tone.Transport.bpm.value = val;
     },
+    createDefaultTrack(name: string, type: InstrumentType = 'square'): TrackInstance {
+      return {
+        name,
+        notes: {},
+        type,
+        volume: -10,
+        reverbWet: 0.1,
+        delayWet: 0.1,
+        muted: false
+      };
+    },
     addTrack(name: string, type: InstrumentType = 'square') {
-      this.tracks.push({ 
-        name, 
-        patterns: { 1: {} }, 
-        type, 
-        volume: -10, 
-        muted: false 
-      });
+      if (!this.currentPattern) return;
+      this.currentPattern.tracks.push(this.createDefaultTrack(name, type));
     },
     duplicateTrack(name: string) {
-      const original = this.tracks.find(t => t.name === name);
+      if (!this.currentPattern) return;
+      const original = this.currentPattern.tracks.find(t => t.name === name);
       if (original) {
-        const newName = `${original.name} (Copy)`;
-        this.tracks.push({
-          name: newName,
-          patterns: JSON.parse(JSON.stringify(original.patterns)),
-          type: original.type,
-          volume: original.volume,
-          muted: original.muted
+        let newName = `${original.name} (Copy)`;
+        let counter = 1;
+        while (this.currentPattern.tracks.find(t => t.name === newName)) {
+          newName = `${original.name} (Copy ${counter})`;
+          counter++;
+        }
+        this.currentPattern.tracks.push({
+          ...JSON.parse(JSON.stringify(original)),
+          name: newName
         });
         this.selectedTrackName = newName;
       }
     },
     removeTrack(name: string) {
-      this.tracks = this.tracks.filter(t => t.name !== name);
-      if (this.selectedTrackName === name && this.tracks.length > 0) {
-        this.selectedTrackName = this.tracks[0].name;
+      if (!this.currentPattern) return;
+      this.currentPattern.tracks = this.currentPattern.tracks.filter(t => t.name !== name);
+      if (this.selectedTrackName === name && this.currentPattern.tracks.length > 0) {
+        this.selectedTrackName = this.currentPattern.tracks[0].name;
       }
     },
     ensureTrackExists(name: string) {
-      if (!this.tracks.find(t => t.name === name)) {
+      if (!this.currentPattern) return;
+      if (!this.currentPattern.tracks.find(t => t.name === name)) {
         this.addTrack(name);
       }
     },
+    getTrackInPattern(trackName: string, patternId?: number): TrackInstance | undefined {
+      const pId = patternId ?? this.currentPatternId;
+      return this.patterns[pId]?.tracks.find(t => t.name === trackName);
+    },
     setTrackType(trackName: string, type: InstrumentType) {
-      this.ensureTrackExists(trackName);
-      const track = this.tracks.find(t => t.name === trackName);
-      if (track) {
-        track.type = type;
-      }
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.type = type;
+    },
+    setTrackReverb(trackName: string, value: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.reverbWet = value;
+    },
+    setTrackDelay(trackName: string, value: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.delayWet = value;
     },
     toggleMute(trackName: string) {
-      const track = this.tracks.find(t => t.name === trackName);
-      if (track) {
-        track.muted = !track.muted;
-      }
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.muted = !track.muted;
     },
     setVolume(trackName: string, volume: number) {
-      const track = this.tracks.find(t => t.name === trackName);
-      if (track) {
-        track.volume = volume;
-      }
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.volume = volume;
     },
     addNote(trackName: string, step: number, note: string) {
-      this.ensureTrackExists(trackName);
-      const track = this.tracks.find(t => t.name === trackName);
-      if (track) {
-        if (!track.patterns[this.currentPatternId]) {
-          track.patterns[this.currentPatternId] = {};
-        }
-        track.patterns[this.currentPatternId][step] = note;
-      }
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.notes[step] = note;
     },
     removeNote(trackName: string, step: number) {
-      const track = this.tracks.find(t => t.name === trackName);
-      if (track && track.patterns[this.currentPatternId]) {
-        delete track.patterns[this.currentPatternId][step];
-      }
+      const track = this.getTrackInPattern(trackName);
+      if (track) delete track.notes[step];
     },
     getNoteAt(trackName: string, step: number, patternId?: number): string | undefined {
-      const track = this.tracks.find(t => t.name === trackName);
-      const pId = patternId ?? this.currentPatternId;
-      return track?.patterns[pId]?.[step];
+      const track = this.getTrackInPattern(trackName, patternId);
+      return track?.notes[step];
     },
     clearAll() {
-      this.tracks.forEach(track => {
-        track.patterns = { 1: {} };
-      });
+      this.patterns = {
+        1: {
+          tracks: [this.createDefaultTrack('Track 1')]
+        }
+      };
       this.currentPatternId = 1;
       this.songSequence = [1];
       this.currentSequenceIndex = 0;
+      this.selectedTrackName = 'Track 1';
     },
     loadProject(data: any) {
-      if (data.tracks) {
-        // Migration for old format
-        this.tracks = data.tracks.map((t: any) => ({
-          ...t,
-          patterns: t.patterns || { 1: t.notes || {} }
-        }));
+      if (data.patterns) {
+        this.patterns = data.patterns;
+      } else if (data.tracks) {
+        // Migration from very old format
+        this.patterns = {
+          1: { tracks: data.tracks }
+        };
       }
       if (data.bpm) this.setBpm(data.bpm);
       if (data.songSequence) this.songSequence = data.songSequence;
     },
     setPattern(id: number) {
       this.currentPatternId = id;
-      this.tracks.forEach(t => {
-        if (!t.patterns[id]) t.patterns[id] = {};
-      });
+      if (!this.patterns[id]) {
+        this.patterns[id] = {
+          tracks: [this.createDefaultTrack('Track 1')]
+        };
+      }
+      // Select first track of the new pattern
+      if (this.patterns[id].tracks.length > 0) {
+        this.selectedTrackName = this.patterns[id].tracks[0].name;
+      }
+    },
+    duplicatePattern(sourceId: number, targetId: number) {
+      if (this.patterns[sourceId]) {
+        this.patterns[targetId] = JSON.parse(JSON.stringify(this.patterns[sourceId]));
+      }
     },
     addToSequence(patternId: number) {
       this.songSequence.push(patternId);
@@ -135,6 +181,17 @@ export const useSequencerStore = defineStore('sequencer', {
     removeFromSequence(index: number) {
       this.songSequence.splice(index, 1);
       if (this.songSequence.length === 0) this.songSequence = [1];
+    },
+    clearCurrentPattern() {
+      if (this.currentPattern) {
+        this.currentPattern.tracks.forEach(track => {
+          track.notes = {};
+        });
+      }
+    },
+    clearTrackNotes(trackName: string) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) track.notes = {};
     }
   }
 });

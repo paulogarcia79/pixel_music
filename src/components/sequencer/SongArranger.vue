@@ -17,6 +17,13 @@ const removePatternFromSequence = (index: number) => {
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-neon-cyan text-xs uppercase tracking-widest font-bold">Song Arranger (Sequence)</h2>
       <div class="flex items-center gap-4">
+        <button 
+          @click="store.duplicatePattern(store.currentPatternId, store.currentPatternId + 1)"
+          class="text-[9px] border border-neon-cyan px-2 py-1 text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg transition-all uppercase"
+          title="Copy current pattern to next slot"
+        >
+          Duplicate P{{ store.currentPatternId }}
+        </button>
         <label class="flex items-center gap-2 cursor-pointer group">
           <span class="text-[10px] uppercase text-neon-pink group-hover:shadow-[0_0_5px_#ff2a6d]">Song Mode</span>
           <input 

@@ -7,17 +7,27 @@ vi.mock('tone', () => {
   class GenericMock {
     toDestination() { return this; }
     connect() { return this; }
+    fan() { return this; }
     triggerAttackRelease() {}
     dispose() {}
-    volume = { value: 0 };
-    wet = { value: 0 };
+    setValueAtTime() {}
+    volume = { value: 0, rampTo: vi.fn(), setValueAtTime: vi.fn() };
+    wet = { value: 0, setValueAtTime: vi.fn() };
   }
   return {
     Synth: class extends GenericMock {},
     NoiseSynth: class extends GenericMock {},
+    MembraneSynth: class extends GenericMock {},
+    FMSynth: class extends GenericMock {},
     Reverb: class extends GenericMock {},
     FeedbackDelay: class extends GenericMock {},
+    Limiter: class extends GenericMock {},
+    Compressor: class extends GenericMock {},
+    Volume: class extends GenericMock {},
+    Waveform: class extends GenericMock { getValue() { return new Float32Array(256); } },
+    Recorder: class extends GenericMock { start() {} stop() { return Promise.resolve(new Blob()); } },
     start: vi.fn().mockResolvedValue(undefined),
+    now: vi.fn(() => 0),
     Transport: {
       scheduleRepeat: vi.fn(),
       start: vi.fn(),

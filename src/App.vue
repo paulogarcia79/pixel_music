@@ -10,14 +10,19 @@ const store = useSequencerStore();
 const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell', 'kick', 'snare', 'hihat'];
 
 const addTrack = () => {
-  const newTrackName = `Track ${store.tracks.length + 1}`;
+  const newTrackName = `Track ${store.currentTracks.length + 1}`;
   store.addTrack(newTrackName);
   store.selectedTrackName = newTrackName;
 };
 
+const removeTrack = (name: string) => {
+  store.removeTrack(name);
+  AudioEngine.resetSynth(name);
+};
+
 const handleTypeChange = (trackName: string, type: InstrumentType) => {
   store.setTrackType(trackName, type);
-  AudioEngine.resetSynth(trackName); // Force recreate synth with new type
+  // AudioEngine.getOrCreateNodesForTrack will handle recreation on next play/preview
 };
 </script>
 
@@ -29,7 +34,7 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
     <!-- Main Content -->
     <main class="flex-1 flex overflow-hidden">
       <!-- Sidebar -->
-      <aside class="w-72 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4 flex flex-col">
+      <aside class="w-80 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4 flex flex-col flex-shrink-0">
         <div class="flex items-center justify-between mb-4 border-b border-grid-line pb-2">
           <h2 class="text-neon-cyan text-xs uppercase tracking-tighter font-bold">Tracks</h2>
           <div class="flex gap-1">
@@ -47,7 +52,7 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
         
         <div class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
           <div 
-            v-for="track in store.tracks" 
+            v-for="track in store.currentTracks" 
             :key="track.name"
             class="p-3 border transition-all duration-200 cursor-pointer group"
             :class="[
@@ -61,21 +66,29 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
               <span class="text-neon-cyan text-xs font-bold uppercase truncate pr-2">{{ track.name }}</span>
               <div class="flex items-center gap-1">
                 <button 
+                  @click.stop="store.clearTrackNotes(track.name)"
+                  class="w-4 h-4 text-[8px] border border-neon-pink text-neon-pink flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-pink hover:text-white transition-all"
+                  title="Clear Track notes in current Pattern"
+                >
+                  C
+                </button>
+                <button 
                   @click.stop="store.duplicateTrack(track.name)"
                   class="w-4 h-4 text-[8px] border border-neon-cyan text-neon-cyan flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-cyan hover:text-white transition-all mr-1"
-                  title="Duplicate Track"
+                  title="Duplicate Track Globally"
                 >
                   D
                 </button>
                 <button 
-                  @click.stop="store.removeTrack(track.name)"
+                  @click.stop="removeTrack(track.name)"
                   class="w-4 h-4 text-[8px] border border-neon-pink text-neon-pink flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-pink hover:text-white transition-all"
+                  title="Remove Track Globally"
                 >
                   X
                 </button>
                 <button 
                   @click.stop="store.toggleMute(track.name)"
-                  class="px-1 text-[8px] border transition-colors"
+                  class="px-1 text-[8px] border transition-colors ml-1"
                   :class="track.muted ? 'bg-neon-pink border-neon-pink text-white' : 'border-grid-line text-grid-line hover:text-neon-cyan'"
                 >
                   MUTE
@@ -106,6 +119,17 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
                   @input="(e) => store.setVolume(track.name, Number((e.target as HTMLInputElement).value))"
                   class="flex-1 accent-neon-cyan h-1 bg-grid-line appearance-none cursor-pointer"
                 />
+              </div>
+
+              <div class="flex gap-4 pt-1" @click.stop>
+                <div class="flex-1 flex flex-col gap-1">
+                  <span class="text-[7px] text-neon-green uppercase opacity-60">Reverb</span>
+                  <input type="range" min="0" max="1" step="0.01" :value="track.reverbWet" @input="(e) => store.setTrackReverb(track.name, Number((e.target as HTMLInputElement).value))" class="accent-neon-green h-0.5 bg-grid-line appearance-none cursor-pointer" />
+                </div>
+                <div class="flex-1 flex flex-col gap-1">
+                  <span class="text-[7px] text-neon-cyan uppercase opacity-60">Delay</span>
+                  <input type="range" min="0" max="1" step="0.01" :value="track.delayWet" @input="(e) => store.setTrackDelay(track.name, Number((e.target as HTMLInputElement).value))" class="accent-neon-cyan h-0.5 bg-grid-line appearance-none cursor-pointer" />
+                </div>
               </div>
             </div>
           </div>

@@ -61,7 +61,7 @@ When('I set the instrument of {string} to {string}', (state: any, [trackName, ty
 
 Then('{string} should have {string} as instrument type', (state: any, [trackName, type]: [string, string]) => {
   const store = useSequencerStore();
-  const track = store.tracks.find(t => t.name === trackName);
+  const track = store.getTrackInPattern(trackName, 1);
   expect(track?.type).toBe(type);
   return state;
 });
