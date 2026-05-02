@@ -8,11 +8,26 @@ import * as Tone from 'tone';
 const store = useSequencerStore();
 const isPlaying = ref(false);
 const isRecording = ref(false);
+const isRendering = ref(false);
 let stateCheckInterval: number;
 
 const togglePlay = async () => {
   await AudioEngine.toggle();
   isPlaying.value = Tone.Transport.state === 'started';
+};
+
+const handleRenderWav = async () => {
+  if (isRendering.value) return;
+  
+  try {
+    isRendering.value = true;
+    await AudioEngine.exportAudioOffline();
+  } catch (error) {
+    console.error("Render failed:", error);
+    alert("Error al renderizar el audio.");
+  } finally {
+    isRendering.value = false;
+  }
 };
 
 const toggleRecord = async () => {
@@ -102,11 +117,18 @@ onUnmounted(() => {
     </button>
 
     <button 
-      @click="AudioEngine.exportAudioOffline()"
-      class="px-4 py-2 border border-neon-cyan text-neon-cyan text-[10px] uppercase hover:bg-neon-cyan hover:text-dark-bg transition-all mr-2"
-      title="Render full song to WAV instantly"
+      @click="handleRenderWav"
+      :disabled="isRendering"
+      class="px-4 py-2 border text-[10px] uppercase transition-all duration-300 mr-2 flex items-center gap-2"
+      :class="[
+        isRendering 
+          ? 'bg-neon-cyan/20 border-neon-cyan text-white animate-pulse cursor-not-allowed' 
+          : 'border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-dark-bg'
+      ]"
+      :title="isRendering ? 'Rendering your masterpiece...' : 'Render full song to WAV instantly'"
     >
-      Render WAV
+      <div v-if="isRendering" class="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+      {{ isRendering ? 'Rendering...' : 'Render WAV' }}
     </button>
 
     <button 
