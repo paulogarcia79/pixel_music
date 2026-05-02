@@ -7,7 +7,7 @@ import { AudioEngine } from './audio/AudioEngine';
 
 const store = useSequencerStore();
 
-const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell'];
+const instrumentTypes: InstrumentType[] = ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'fm_pluck', 'fm_bell', 'kick', 'snare', 'hihat'];
 
 const addTrack = () => {
   const newTrackName = `Track ${store.tracks.length + 1}`;
@@ -60,6 +60,13 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
             <div class="flex justify-between items-center mb-2">
               <span class="text-neon-cyan text-xs font-bold uppercase truncate pr-2">{{ track.name }}</span>
               <div class="flex items-center gap-1">
+                <button 
+                  @click.stop="store.duplicateTrack(track.name)"
+                  class="w-4 h-4 text-[8px] border border-neon-cyan text-neon-cyan flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-cyan hover:text-white transition-all mr-1"
+                  title="Duplicate Track"
+                >
+                  D
+                </button>
                 <button 
                   @click.stop="store.removeTrack(track.name)"
                   class="w-4 h-4 text-[8px] border border-neon-pink text-neon-pink flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-pink hover:text-white transition-all"

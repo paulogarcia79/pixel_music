@@ -32,6 +32,26 @@ export class AudioEngine {
       case 'noise':
         synth = new Tone.NoiseSynth({ envelope: { attack: 0.005, decay: 0.1, sustain: 0.0 } }).connect(dest);
         break;
+      case 'kick':
+        synth = new Tone.MembraneSynth({ 
+          pitchDecay: 0.05, 
+          octaves: 10, 
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4 }
+        }).connect(dest);
+        break;
+      case 'snare':
+        synth = new Tone.NoiseSynth({
+          noise: { type: 'white' },
+          envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 }
+        }).connect(dest);
+        break;
+      case 'hihat':
+        synth = new Tone.NoiseSynth({
+          noise: { type: 'pink' },
+          envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
+        }).connect(dest);
+        break;
       case 'sine':
         synth = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.05, release: 1 } }).connect(dest);
         break;
@@ -83,8 +103,10 @@ export class AudioEngine {
           const synth = this.getOrCreateSynthForTrack(track.name, track.type);
           synth.volume.value = track.volume;
 
-          if (track.type === 'noise') {
+          if (track.type === 'noise' || track.type === 'snare' || track.type === 'hihat') {
             (synth as Tone.NoiseSynth).triggerAttackRelease('16n', time);
+          } else if (track.type === 'kick') {
+            (synth as Tone.MembraneSynth).triggerAttackRelease(note, '16n', time);
           } else {
             synth.triggerAttackRelease(note, '16n', time);
           }
@@ -120,8 +142,10 @@ export class AudioEngine {
     const synth = this.getOrCreateSynthForTrack(trackName, type);
     synth.volume.value = -10;
 
-    if (type === 'noise') {
+    if (type === 'noise' || type === 'snare' || type === 'hihat') {
       (synth as Tone.NoiseSynth).triggerAttackRelease(duration);
+    } else if (type === 'kick') {
+      (synth as Tone.MembraneSynth).triggerAttackRelease(note, duration);
     } else {
       synth.triggerAttackRelease(note, duration);
     }

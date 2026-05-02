@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import * as Tone from 'tone';
 
-export type InstrumentType = 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'fm_pluck' | 'fm_bell';
+export type InstrumentType = 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'fm_pluck' | 'fm_bell' | 'kick' | 'snare' | 'hihat';
 
 interface Track {
   name: string;
@@ -38,6 +38,20 @@ export const useSequencerStore = defineStore('sequencer', {
         volume: -10, 
         muted: false 
       });
+    },
+    duplicateTrack(name: string) {
+      const original = this.tracks.find(t => t.name === name);
+      if (original) {
+        const newName = `${original.name} (Copy)`;
+        this.tracks.push({
+          name: newName,
+          patterns: JSON.parse(JSON.stringify(original.patterns)),
+          type: original.type,
+          volume: original.volume,
+          muted: original.muted
+        });
+        this.selectedTrackName = newName;
+      }
     },
     removeTrack(name: string) {
       this.tracks = this.tracks.filter(t => t.name !== name);
