@@ -14,6 +14,7 @@ export default defineConfig({
     globals: true,
     environment: 'happy-dom',
     include: ['**/*.feature', '**/*.spec.ts', '**/*.test.ts'],
+    setupFiles: ['tests/setup.ts'],
   },
   server: {
     watch: {
