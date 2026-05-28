@@ -1,34 +1,71 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import Transport from './components/sequencer/Transport.vue';
 import PianoRoll from './components/sequencer/PianoRoll.vue';
 import SongArranger from './components/sequencer/SongArranger.vue';
+import DevicePanel from './components/sequencer/DevicePanel.vue';
+import PixelIcon from './components/sequencer/PixelIcon.vue';
 import { useSequencerStore, type InstrumentType } from './stores/sequencer';
 import { AudioEngine } from './audio/AudioEngine';
 
 const store = useSequencerStore();
 
-const instrumentGroups = [
-  {
-    name: 'Retro Basics',
-    types: ['square', 'triangle', 'sawtooth', 'noise', 'sine', 'pulse', 'pwm']
-  },
-  {
-    name: 'Percussion',
-    types: ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot']
-  },
-  {
-    name: 'Keys & Organs',
-    types: ['piano_pixel', 'electric_piano', 'honky_tonk', 'organ_pixel', 'church_organ']
-  },
-  {
-    name: 'Strings & Vents',
-    types: ['guitar_pixel', 'guitar_dist', 'flute_pixel', 'clarinet_pixel', 'retro_oboe']
-  },
-  {
-    name: 'Synths',
-    types: ['bass_synth', 'sub_bass', 'lead_synth', 'super_saw', 'acid_synth', 'pad', 'fm_pluck', 'fm_bell', 'retro_brass', 'ghost_synth']
-  }
-];
+const isDevicePanelOpen = ref(true);
+
+// Mapeo estructurado de tipos de instrumentos a iconos y categorías (R10)
+const INSTRUMENT_CATEGORIES: Record<InstrumentType, { icon: string; category: string }> = {
+  // Retro Basics
+  square: { icon: 'cpu', category: 'Basic' },
+  triangle: { icon: 'cpu', category: 'Basic' },
+  sawtooth: { icon: 'cpu', category: 'Basic' },
+  noise: { icon: 'cpu', category: 'Basic' },
+  sine: { icon: 'cpu', category: 'Basic' },
+  pulse: { icon: 'cpu', category: 'Basic' },
+  pwm: { icon: 'cpu', category: 'Basic' },
+
+  // Percussion
+  kick: { icon: 'drum', category: 'Drum' },
+  snare: { icon: 'drum', category: 'Drum' },
+  hihat: { icon: 'drum', category: 'Drum' },
+  tom: { icon: 'drum', category: 'Drum' },
+  clap: { icon: 'drum', category: 'Drum' },
+  crash: { icon: 'drum', category: 'Drum' },
+  conga: { icon: 'drum', category: 'Drum' },
+  cowbell: { icon: 'drum', category: 'Drum' },
+  woodblock: { icon: 'drum', category: 'Drum' },
+  shaker: { icon: 'drum', category: 'Drum' },
+  rimshot: { icon: 'drum', category: 'Drum' },
+
+  // Keys & Organs
+  piano_pixel: { icon: 'keyboard', category: 'Keys' },
+  electric_piano: { icon: 'keyboard', category: 'Keys' },
+  honky_tonk: { icon: 'keyboard', category: 'Keys' },
+  organ_pixel: { icon: 'keyboard', category: 'Keys' },
+  church_organ: { icon: 'keyboard', category: 'Keys' },
+
+  // Strings & Vents
+  guitar_pixel: { icon: 'music', category: 'Strings' },
+  guitar_dist: { icon: 'music', category: 'Strings' },
+  flute_pixel: { icon: 'music', category: 'Strings' },
+  clarinet_pixel: { icon: 'music', category: 'Strings' },
+  retro_oboe: { icon: 'music', category: 'Strings' },
+
+  // Synths
+  bass_synth: { icon: 'waves', category: 'Synth' },
+  sub_bass: { icon: 'waves', category: 'Synth' },
+  lead_synth: { icon: 'waves', category: 'Synth' },
+  super_saw: { icon: 'waves', category: 'Synth' },
+  acid_synth: { icon: 'waves', category: 'Synth' },
+  pad: { icon: 'waves', category: 'Synth' },
+  fm_pluck: { icon: 'waves', category: 'Synth' },
+  fm_bell: { icon: 'waves', category: 'Synth' },
+  retro_brass: { icon: 'waves', category: 'Synth' },
+  ghost_synth: { icon: 'waves', category: 'Synth' }
+};
+
+const getTrackIcon = (type: InstrumentType) => {
+  return INSTRUMENT_CATEGORIES[type]?.icon || 'cpu';
+};
 
 const addTrack = () => {
   const newTrackName = `Track ${store.currentTracks.length + 1}`;
@@ -40,54 +77,48 @@ const removeTrack = (name: string) => {
   store.removeTrack(name);
   AudioEngine.resetSynth(name);
 };
-
-const handleTypeChange = (trackName: string, type: InstrumentType) => {
-  store.setTrackType(trackName, type);
-  // AudioEngine.getOrCreateNodesForTrack will handle recreation on next play/preview
-};
 </script>
 
 <template>
   <div class="h-screen flex flex-col bg-dark-bg selection:bg-neon-pink selection:text-white">
-    <!-- Header / Transport -->
+    <!-- Header / Transport Controls -->
     <Transport />
 
-    <!-- Main Content -->
+    <!-- Main Content Workspace -->
     <main class="flex-1 flex overflow-hidden">
-      <!-- Sidebar -->
-      <aside class="w-80 border-r border-grid-line bg-dark-bg/50 hidden md:block p-4 flex flex-col flex-shrink-0">
-        <div class="flex items-center justify-between mb-4 border-b border-grid-line pb-2">
-          <h2 class="text-neon-cyan text-xs uppercase tracking-tighter font-bold">Tracks</h2>
-          <div class="flex items-center gap-2">
-            <div class="flex items-center gap-1">
-              <span class="text-[8px] text-neon-cyan uppercase">Grid:</span>
-              <select 
-                :value="store.currentPattern?.gridSize || 32"
-                @change="(e) => store.setGridSize(Number((e.target as HTMLSelectElement).value))"
-                class="bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-0.5 outline-none"
-              >
-                <option :value="8">8</option>
-                <option :value="16">16</option>
-                <option :value="32">32</option>
-              </select>
-            </div>
+      <!-- Sidebar (Slim Track Strips - R9) -->
+      <aside class="w-60 border-r border-grid-line bg-[#0d0d11] hidden md:flex flex-col flex-shrink-0 p-3">
+        <!-- Sidebar Header -->
+        <div class="flex items-center justify-between mb-3 border-b border-grid-line pb-2">
+          <h2 class="text-neon-cyan text-[10px] uppercase tracking-widest font-bold font-mono">Tracks</h2>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[8px] font-mono text-neon-cyan/60 uppercase">Grid:</span>
+            <select 
+              :value="store.currentPattern?.gridSize || 32"
+              @change="(e) => store.setGridSize(Number((e.target as HTMLSelectElement).value))"
+              class="bg-black/60 border border-grid-line text-neon-cyan text-[9px] px-1 py-0.5 outline-none font-mono"
+            >
+              <option :value="8">8</option>
+              <option :value="16">16</option>
+              <option :value="32">32</option>
+            </select>
           </div>
         </div>
         
-        <div class="grid grid-cols-8 gap-1 mb-4">
+        <!-- Compact Pattern Selector (8 patterns) -->
+        <div class="grid grid-cols-4 gap-1 mb-3">
           <button 
-            v-for="p in 16" 
+            v-for="p in 8" 
             :key="p"
             @click="store.setPattern(p)"
-            class="py-1 text-[8px] border transition-all text-center relative group"
+            class="py-1 text-[8px] border transition-all text-center relative font-mono cursor-pointer"
             :class="[
               store.currentPatternId === p 
-                ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d] z-10' 
+                ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_5px_#ff2a6d] z-10 font-bold' 
                 : 'border-grid-line text-neon-cyan/40 hover:border-neon-cyan/60'
             ]"
           >
             P{{ p }}
-            <!-- Indicator for patterns with notes -->
             <div 
               v-if="store.patterns[p] && store.patterns[p].tracks.some(t => Object.keys(t.notes).length > 0)"
               class="absolute bottom-0.5 right-0.5 w-1 h-1 bg-neon-cyan rounded-full shadow-[0_0_2px_#05d9e8]"
@@ -95,121 +126,100 @@ const handleTypeChange = (trackName: string, type: InstrumentType) => {
           </button>
         </div>
         
-        <div class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+        <!-- Slim Track Strips Container -->
+        <div class="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
           <div 
             v-for="track in store.currentTracks" 
             :key="track.name"
-            class="p-3 border transition-all duration-200 cursor-pointer group"
+            class="p-2 border transition-all duration-200 cursor-pointer rounded flex flex-col gap-1.5 relative overflow-hidden bg-black/30"
             :class="[
               store.selectedTrackName === track.name 
-                ? 'border-neon-cyan bg-neon-cyan/10 shadow-[0_0_10px_rgba(5,217,232,0.2)]' 
-                : 'border-grid-line hover:border-neon-cyan/50 bg-transparent'
+                ? 'border-neon-cyan shadow-[0_0_8px_rgba(5,217,232,0.25)] bg-neon-cyan/5' 
+                : 'border-grid-line hover:border-neon-cyan/40'
             ]"
             @click="store.selectedTrackName = track.name"
           >
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-neon-cyan text-xs font-bold uppercase truncate pr-2">{{ track.name }}</span>
+            <!-- Track Info & Controls -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <PixelIcon :name="getTrackIcon(track.type)" class="w-3.5 h-3.5 text-neon-cyan flex-shrink-0" />
+                <span class="text-neon-cyan text-[10px] font-bold uppercase truncate max-w-[80px] font-mono">{{ track.name }}</span>
+              </div>
+              
+              <!-- Compact Actions (R11) -->
               <div class="flex items-center gap-1">
-                <button 
-                  @click.stop="store.clearTrackNotes(track.name)"
-                  class="w-4 h-4 text-[8px] border border-neon-pink text-neon-pink flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-pink hover:text-white transition-all"
-                  title="Clear Track notes in current Pattern"
-                >
-                  C
-                </button>
-                <button 
-                  @click.stop="store.duplicateTrack(track.name)"
-                  class="w-4 h-4 text-[8px] border border-neon-cyan text-neon-cyan flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-cyan hover:text-white transition-all mr-1"
-                  title="Duplicate Track Globally"
-                >
-                  D
-                </button>
-                <button 
-                  @click.stop="removeTrack(track.name)"
-                  class="w-4 h-4 text-[8px] border border-neon-pink text-neon-pink flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-neon-pink hover:text-white transition-all"
-                  title="Remove Track Globally"
-                >
-                  X
-                </button>
+                <!-- Mute toggle button -->
                 <button 
                   @click.stop="store.toggleMute(track.name)"
-                  class="px-1 text-[8px] border transition-colors ml-1"
-                  :class="track.muted ? 'bg-neon-pink border-neon-pink text-white' : 'border-grid-line text-grid-line hover:text-neon-cyan'"
+                  class="px-1 py-0.5 text-[7px] font-bold border transition-all uppercase rounded cursor-pointer font-mono"
+                  :class="track.muted 
+                    ? 'bg-neon-pink border-neon-pink text-white shadow-[0_0_4px_#ff2a6d]' 
+                    : 'border-gray-800 text-gray-500 hover:text-neon-pink hover:border-neon-pink/40'"
                 >
                   MUTE
+                </button>
+                
+                <!-- Duplicate -->
+                <button 
+                  @click.stop="store.duplicateTrack(track.name)"
+                  class="p-0.5 text-gray-500 hover:text-neon-cyan rounded transition-colors cursor-pointer"
+                  title="Duplicate Track"
+                >
+                  <PixelIcon name="copy" class="w-2.5 h-2.5" />
+                </button>
+                
+                <!-- Remove -->
+                <button 
+                  @click.stop="removeTrack(track.name)"
+                  class="p-0.5 text-gray-500 hover:text-neon-pink rounded transition-colors cursor-pointer"
+                  title="Remove Track"
+                >
+                  <PixelIcon name="trash" class="w-2.5 h-2.5" />
                 </button>
               </div>
             </div>
             
-            <div class="space-y-2">
-              <select 
-                :value="track.type"
-                @change="(e) => handleTypeChange(track.name, (e.target as HTMLSelectElement).value as InstrumentType)"
-                @click.stop
-                class="w-full bg-dark-bg border border-grid-line text-neon-cyan text-[10px] p-1 focus:border-neon-pink outline-none uppercase"
-              >
-                <optgroup v-for="group in instrumentGroups" :key="group.name" :label="group.name" class="bg-dark-bg">
-                  <option v-for="type in group.types" :key="type" :value="type">
-                    {{ type.replace('_', ' ') }}
-                  </option>
-                </optgroup>
-              </select>
-
-              <div class="flex items-center gap-2" @click.stop>
-                <span class="text-[8px] text-neon-cyan/50 w-6">VOL</span>
-                <input 
-                  type="range" 
-                  min="-40" 
-                  max="0" 
-                  step="1"
-                  :value="track.volume"
-                  @input="(e) => store.setVolume(track.name, Number((e.target as HTMLInputElement).value))"
-                  class="flex-1 accent-neon-cyan h-1 bg-grid-line appearance-none cursor-pointer"
-                />
-              </div>
-
-              <div class="flex gap-4 pt-1" @click.stop>
-                <div class="flex-1 flex flex-col gap-1">
-                  <span class="text-[7px] text-neon-green uppercase opacity-60">Reverb</span>
-                  <input type="range" min="0" max="1" step="0.01" :value="track.reverbWet" @input="(e) => store.setTrackReverb(track.name, Number((e.target as HTMLInputElement).value))" class="accent-neon-green h-0.5 bg-grid-line appearance-none cursor-pointer" />
-                </div>
-                <div class="flex-1 flex flex-col gap-1">
-                  <span class="text-[7px] text-neon-cyan uppercase opacity-60">Delay</span>
-                  <input type="range" min="0" max="1" step="0.01" :value="track.delayWet" @input="(e) => store.setTrackDelay(track.name, Number((e.target as HTMLInputElement).value))" class="accent-neon-cyan h-0.5 bg-grid-line appearance-none cursor-pointer" />
-                </div>
-              </div>
-
-              <div class="flex gap-4 pt-1 border-t border-grid-line/30" @click.stop>
-                <div class="flex-1 flex flex-col gap-1">
-                  <span class="text-[7px] text-white uppercase opacity-60">Attack</span>
-                  <input type="range" min="0.001" max="2" step="0.01" :value="track.attack" @input="(e) => store.setTrackADSR(track.name, Number((e.target as HTMLInputElement).value), track.release)" class="accent-white h-0.5 bg-grid-line appearance-none cursor-pointer" />
-                </div>
-                <div class="flex-1 flex flex-col gap-1">
-                  <span class="text-[7px] text-white uppercase opacity-60">Release</span>
-                  <input type="range" min="0.01" max="4" step="0.01" :value="track.release" @input="(e) => store.setTrackADSR(track.name, track.attack, Number((e.target as HTMLInputElement).value))" class="accent-white h-0.5 bg-grid-line appearance-none cursor-pointer" />
-                </div>
-              </div>
+            <!-- Compact Volume Slider (R11) -->
+            <div class="flex items-center gap-1.5" @click.stop>
+              <PixelIcon name="volume2" class="w-3 h-3 text-neon-cyan/40" />
+              <input 
+                type="range" 
+                min="-40" 
+                max="0" 
+                step="1"
+                :value="track.volume"
+                @input="(e) => store.setVolume(track.name, Number((e.target as HTMLInputElement).value))"
+                class="flex-1 accent-neon-cyan h-1 bg-grid-line appearance-none cursor-pointer rounded-full"
+              />
             </div>
           </div>
         </div>
 
         <button 
           @click="addTrack"
-          class="mt-4 w-full p-2 border border-dashed border-grid-line text-grid-line text-[10px] hover:border-neon-cyan hover:text-neon-cyan transition-colors uppercase tracking-widest"
+          class="mt-3 w-full py-1.5 border border-dashed border-grid-line text-grid-line text-[9px] hover:border-neon-cyan hover:text-neon-cyan transition-colors uppercase tracking-widest font-mono cursor-pointer"
         >
-          + ADD TRACK
+          + Add Track
         </button>
       </aside>
 
-      <!-- Piano Roll Area -->
+      <!-- Central Workspace: PianoRoll + SongArranger + DevicePanel (R1) -->
       <div class="flex-1 flex flex-col overflow-hidden">
-        <PianoRoll />
-        <SongArranger />
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <PianoRoll />
+          <SongArranger />
+        </div>
+        
+        <!-- Bottom colapsable Device Panel (Eurorack Rack) -->
+        <DevicePanel 
+          :isOpen="isDevicePanelOpen"
+          @toggle="isDevicePanelOpen = !isDevicePanelOpen"
+        />
       </div>
     </main>
 
     <!-- Footer / Status Bar -->
-    <footer class="bg-dark-bg border-t border-grid-line px-4 py-1 flex justify-between items-center text-[9px] text-neon-cyan/40 uppercase tracking-widest">
+    <footer class="bg-dark-bg border-t border-grid-line px-4 py-1 flex justify-between items-center text-[9px] text-neon-cyan/40 uppercase tracking-widest font-mono">
       <div>Status: {{ store.isSongMode ? 'SONG MODE ACTIVE' : 'PATTERN MODE' }}</div>
       <div>
         <span v-if="!store.isSongMode">Pattern: {{ store.currentPatternId }} | Step: {{ store.currentStep }}</span>
