@@ -13,7 +13,7 @@
       "name": "intuitive_ui_redesign",
       "description": "Rediseño de interfaz de usuario de Pixel Music para maximizar la usabilidad: panel de rack sintetizador inferior (estilo Eurorack de pixel art), barra lateral de pistas delgada con iconos de instrumentos, navegación de octavas y asistente de escalas en el Piano Roll, y un Song Arranger visual por carriles neón.",
       "sdd": true,
-      "status": "spec_ready"
+      "status": "in_progress"
     }
   ]
 }
