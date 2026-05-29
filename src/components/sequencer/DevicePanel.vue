@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useSequencerStore, type InstrumentType } from '../../stores/sequencer';
 import Knob from './Knob.vue';
 import PixelIcon from './PixelIcon.vue';
@@ -19,40 +19,78 @@ const selectedTrack = computed(() => {
   return store.currentTracks.find(t => t.name === store.selectedTrackName);
 });
 
-// Lista completa de instrumentos agrupados por categoría según specs (con strings para PixelIcon)
-const INSTRUMENTS: { type: InstrumentType; name: string; icon: string }[] = [
-  // Basic waveforms
-  { type: 'square', name: 'Square Wave', icon: 'cpu' },
-  { type: 'triangle', name: 'Triangle Wave', icon: 'cpu' },
-  { type: 'sawtooth', name: 'Sawtooth Wave', icon: 'cpu' },
-  { type: 'sine', name: 'Sine Wave', icon: 'cpu' },
-  { type: 'noise', name: 'Noise Generator', icon: 'cpu' },
-  
-  // Retro Synths
-  { type: 'bass_synth', name: 'Pixel Bass', icon: 'waves' },
-  { type: 'sub_bass', name: 'Sub Bass', icon: 'waves' },
-  { type: 'lead_synth', name: 'Lead Chiptune', icon: 'waves' },
-  { type: 'super_saw', name: 'Hyper Saw', icon: 'waves' },
-  { type: 'acid_synth', name: 'Acid Bassline', icon: 'waves' },
-  { type: 'pad', name: 'Chamber Pad', icon: 'waves' },
-  { type: 'fm_pluck', name: 'FM Pluck', icon: 'waves' },
-  { type: 'fm_bell', name: 'FM Bell', icon: 'waves' },
+// T2: Definición de tipos rigurosos para las categorías del catálogo de instrumentos
+type InstrumentCategory = 'WAV' | 'SYN' | 'DRM' | 'KEY';
 
-  // Percussion
-  { type: 'kick', name: '8bit Kick', icon: 'drum' },
-  { type: 'snare', name: 'Pixel Snare', icon: 'drum' },
-  { type: 'hihat', name: 'Metal HiHat', icon: 'drum' },
-  { type: 'tom', name: 'Retro Tom', icon: 'drum' },
-  { type: 'clap', name: 'Chipped Clap', icon: 'drum' },
-  
-  // Keys & Strings
-  { type: 'piano_pixel', name: 'Pixel Piano', icon: 'keyboard' },
-  { type: 'electric_piano', name: 'E-Piano', icon: 'keyboard' },
-  { type: 'organ_pixel', name: 'Pixel Organ', icon: 'keyboard' },
-  { type: 'guitar_pixel', name: 'Classic Guitar', icon: 'music' },
-  { type: 'guitar_dist', name: 'Power Chord', icon: 'music' },
-  { type: 'flute_pixel', name: 'Blowing Flute', icon: 'music' }
+interface InstrumentDefinition {
+  type: InstrumentType;
+  name: string;
+  icon: string;
+  category: InstrumentCategory;
+}
+
+// Lista completa de instrumentos agrupados por categoría según specs (con strings para PixelIcon)
+const INSTRUMENTS: InstrumentDefinition[] = [
+  // WAV
+  { type: 'square', name: 'Square Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'triangle', name: 'Triangle Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'sawtooth', name: 'Sawtooth Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'sine', name: 'Sine Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'noise', name: 'Noise Generator', icon: 'cpu', category: 'WAV' },
+  { type: 'pulse', name: 'Pulse Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'pwm', name: 'PWM Oscillator', icon: 'cpu', category: 'WAV' },
+
+  // SYN
+  { type: 'bass_synth', name: 'Pixel Bass', icon: 'waves', category: 'SYN' },
+  { type: 'sub_bass', name: 'Sub Bass', icon: 'waves', category: 'SYN' },
+  { type: 'lead_synth', name: 'Lead Chiptune', icon: 'waves', category: 'SYN' },
+  { type: 'super_saw', name: 'Hyper Saw', icon: 'waves', category: 'SYN' },
+  { type: 'acid_synth', name: 'Acid Bassline', icon: 'waves', category: 'SYN' },
+  { type: 'pad', name: 'Chamber Pad', icon: 'waves', category: 'SYN' },
+  { type: 'fm_pluck', name: 'FM Pluck', icon: 'waves', category: 'SYN' },
+  { type: 'fm_bell', name: 'FM Bell', icon: 'waves', category: 'SYN' },
+
+  // DRM
+  { type: 'kick', name: '8bit Kick', icon: 'drum', category: 'DRM' },
+  { type: 'snare', name: 'Pixel Snare', icon: 'drum', category: 'DRM' },
+  { type: 'hihat', name: 'Metal HiHat', icon: 'drum', category: 'DRM' },
+  { type: 'tom', name: 'Retro Tom', icon: 'drum', category: 'DRM' },
+  { type: 'clap', name: 'Chipped Clap', icon: 'drum', category: 'DRM' },
+  { type: 'rimshot', name: 'Rimshot', icon: 'drum', category: 'DRM' },
+  { type: 'cowbell', name: 'Cowbell', icon: 'drum', category: 'DRM' },
+
+  // KEY
+  { type: 'piano_pixel', name: 'Pixel Piano', icon: 'keyboard', category: 'KEY' },
+  { type: 'electric_piano', name: 'E-Piano', icon: 'keyboard', category: 'KEY' },
+  { type: 'organ_pixel', name: 'Pixel Organ', icon: 'keyboard', category: 'KEY' },
+  { type: 'church_organ', name: 'Church Organ', icon: 'keyboard', category: 'KEY' },
+  { type: 'guitar_pixel', name: 'Classic Guitar', icon: 'music', category: 'KEY' },
+  { type: 'guitar_dist', name: 'Power Chord', icon: 'music', category: 'KEY' },
+  { type: 'flute_pixel', name: 'Blowing Flute', icon: 'music', category: 'KEY' },
+  { type: 'retro_brass', name: 'Retro Brass', icon: 'music', category: 'KEY' }
 ];
+
+// T3: Estado reactivo local para la pestaña de categoría activa
+const activeTab = ref<InstrumentCategory>('WAV');
+
+// T4: Pistas filtradas rigurosamente por la pestaña activa
+const filteredInstruments = computed(() => {
+  return INSTRUMENTS.filter(inst => inst.category === activeTab.value);
+});
+
+// T5: Auto-foco reactivo bidireccional síncrono (watch de pista activa -> pestaña de categoría)
+watch(
+  () => selectedTrack.value?.type,
+  (newType) => {
+    if (newType) {
+      const matchedInstrument = INSTRUMENTS.find(inst => inst.type === newType);
+      if (matchedInstrument) {
+        activeTab.value = matchedInstrument.category;
+      }
+    }
+  },
+  { immediate: true }
+);
 
 // Propiedades computadas reactivas bidireccionales vinculadas al store
 const trackType = computed({
@@ -259,19 +297,37 @@ const isPercussion = computed(() => {
             <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">1. Oscillator Section</span>
           </div>
 
-          <div class="flex flex-col gap-1.5 overflow-y-auto max-h-28 pr-1 custom-scrollbar">
+          <!-- T6: Barra de pestañas (WAV, SYN, DRM, KEY) -->
+          <div class="flex border-b border-gray-800/80 mb-2 gap-1">
             <button
-              v-for="inst in INSTRUMENTS"
+              v-for="tab in (['WAV', 'SYN', 'DRM', 'KEY'] as const)"
+              :key="tab"
+              @click="activeTab = tab"
+              class="flex-1 py-1 font-mono text-[9px] font-bold tracking-wider uppercase border-t border-x rounded-t transition-all cursor-pointer text-center"
+              :class="[
+                activeTab === tab 
+                  ? 'bg-[#181822] border-neon-cyan/50 text-neon-cyan shadow-[0_-2px_6px_rgba(5,217,232,0.1)]' 
+                  : 'bg-black/20 border-transparent text-gray-500 hover:text-gray-300 hover:bg-black/40'
+              ]"
+            >
+              {{ tab }}
+            </button>
+          </div>
+
+          <!-- T7, T8, T9: Rejilla compacta de dos columnas con botones de 24px (h-6) y resaltado neón -->
+          <div class="grid grid-cols-2 gap-1 overflow-y-auto max-h-[104px] pr-1 custom-scrollbar">
+            <button
+              v-for="inst in filteredInstruments"
               :key="inst.type"
-              class="flex items-center gap-2 px-2 py-1 bg-black/40 border text-left font-mono text-[9px] rounded uppercase transition-all duration-150 active:scale-95 cursor-pointer"
+              class="flex items-center gap-1.5 px-1.5 h-6 bg-black/40 border text-left font-mono text-[8px] rounded uppercase transition-all duration-150 active:scale-95 cursor-pointer min-w-0"
               :class="[
                 trackType === inst.type 
                   ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_8px_rgba(5,217,232,0.15)] font-bold' 
-                  : 'border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-300'
+                  : 'border-gray-800/60 text-gray-400 hover:border-gray-700 hover:text-gray-300'
               ]"
               @click="trackType = inst.type"
             >
-              <PixelIcon :name="inst.icon" class="w-3 h-3 flex-shrink-0" />
+              <PixelIcon :name="inst.icon" class="w-2.5 h-2.5 flex-shrink-0" />
               <span class="truncate">{{ inst.name }}</span>
             </button>
           </div>

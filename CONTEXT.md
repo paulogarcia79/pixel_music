@@ -50,6 +50,10 @@ _Avoid_: Duración, volumen de paso.
 El nivel o proporción de la señal de una pista que se redirige hacia los procesadores de efectos globales de Reverb y Delay.
 _Avoid_: Volumen de efecto, filtro FX.
 
+**Synthesis Category (Categoría de Síntesis)**:
+La clasificación de un sonido o instrumento dentro del Eurorack Device Panel en grupos funcionales (Ondas Básicas, Sintetizadores Retro, Baterías y Acústicos/Teclados) para optimizar la interfaz y sus capacidades de modulación.
+_Avoid_: Tipo de onda global, género de pista.
+
 **Transport (Transporte)**:
 Los controles y el estado de reproducción global del DAW, que gestionan el Tempo (BPM), el paso activo, la reproducción, la pausa y la detención.
 _Avoid_: Reproductor, reloj externo.

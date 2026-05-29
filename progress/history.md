@@ -130,5 +130,38 @@
 - [x] Toda la suite de 64 tests pasa al 100%.
 - [x] Aprobado formalmente por el subagente `reviewer` en `progress/review_classic_guitar_bugfix.md`.
 
+## Sesión: Selector de Instrumentos y Layout Eurorack (2026-05-29)
+### Feature en curso
+- `instrument_selector_improvement` (Rediseño del selector de instrumentos)
 
+### Plan
+- [x] T1 — Modificar `src/components/sequencer/DevicePanel.vue` para expandir la constante `INSTRUMENTS` de 24 a exactamente 30 instrumentos, incorporando a cada definición su categoría correspondiente (`'WAV' | 'SYN' | 'DRM' | 'KEY'`) e iconos descriptivos de píxeles. Cubre: R1, R2.
+- [x] T2 — Definir el tipo `InstrumentCategory` e interfaz `InstrumentDefinition` en `DevicePanel.vue` para garantizar robustez y tipado estricto en TypeScript. Cubre: R1, R2.
+- [x] T3 — Declarar e inicializar el estado reactivo local `activeTab` (`ref<InstrumentCategory>('WAV')`) en `DevicePanel.vue` para rastrear la pestaña seleccionada. Cubre: R3.
+- [x] T4 — Crear la propiedad computada `filteredInstruments` en `DevicePanel.vue` que filtre los 30 instrumentos del catálogo global y retorne sólo aquellos que pertenezcan a la pestaña activa `activeTab`. Cubre: R4.
+- [x] T5 — Implementar el observador reactivo (`watch`) en `DevicePanel.vue` sobre `selectedTrack.value?.type` para sincronizar y auto-enfocar automáticamente la pestaña `activeTab` según la categoría del instrumento de la pista enfocada en el secuenciador. Cubre: R8, R9.
+- [x] T6 — Rediseñar el HTML de la Oscillator Section en la plantilla de `DevicePanel.vue` para renderizar horizontalmente las cuatro pestañas `WAV`, `SYN`, `DRM` y `KEY` con estilos retro-futuristas de Tailwind v4 y controladores de cambio al hacer clic. Cubre: R3, R4.
+- [x] T7 — Reemplazar la grilla de instrumentos por una rejilla compacta de dos columnas (`grid-cols-2`) que renderice la colección computada de `filteredInstruments`. Cubre: R5.
+- [x] T8 — Configurar cada botón de instrumento de la rejilla con una altura física fija y compacta de exactamente `24px` (`h-6`) y asegurar que el click llame a la propiedad de actualización `trackType`. Cubre: R6, R10.
+- [x] T9 — Aplicar clases condicionales a los botones de instrumento en la rejilla para destacar visualmente el instrumento activo de la pista seleccionada (borde neón y fondo translúcido). Cubre: R7.
+- [x] T10 — Actualizar y ampliar la suite de pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la cobertura completa de los nuevos requerimientos. Cubre: R1-R10.
+- [x] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde. Cubre: R1-R10.
 
+- [x] Implementación completada con éxito.
+- [x] Todas las pruebas (65 tests en verde) pasan perfectamente.
+- [x] Aprobado por el subagente `reviewer` en `progress/review_instrument_selector_improvement.md`.
+
+## Sesión: Corrección de Bug de Volumen Inaudible en Percusión Tonal (2026-05-29)
+### Feature en curso
+- `tonal_percussion_bugfix` (en la rama `bugfix/tonal-percussion-volume`)
+
+### Plan
+- [x] T1 — Modificar `AudioEngine.setupLoop` en `src/audio/AudioEngine.ts` para disparar instrumentos de percusión tonal (`kick`, `tom`, `conga`, `woodblock`) usando la nota programada (o fallback `'C2'`) en lugar del valor `'16n'`.
+- [x] T2 — Modificar `AudioEngine.playNote` en `src/audio/AudioEngine.ts` para reproducir notas de preescucha con tono en percusión de membrana.
+- [x] T3 — Modificar `AudioEngine.exportAudioOffline` en `src/audio/AudioEngine.ts` para renderizar la exportación offline usando notas reales en percusión de membrana.
+- [x] T4 — Escribir pruebas unitarias e integración en `tests/audioEngine.spec.ts` que validen el paso de notas tonales y duración adecuada a los sintetizadores de membrana.
+- [x] T5 — Ejecutar `./init.sh` en el workspace para certificar que compila y que todas las pruebas pasan exitosamente al 100%.
+
+- [x] Bug corregido con éxito aplicando comprobaciones y fallbacks robustos para kick, tom, conga y woodblock.
+- [x] Toda la suite completa de 68 tests (incluyendo 3 nuevos tests dedicados) pasa al 100%.
+- [x] Aprobado formalmente por el subagente `reviewer` en `progress/review_tonal_percussion_bugfix.md`.
