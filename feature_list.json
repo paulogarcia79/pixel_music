@@ -20,6 +20,12 @@
       "description": "Biblioteca de ritmos predefinidos (Pattern Presets) para iniciar la creación de música con estilos retro como Chiptune Techno, Synthwave Retro, 8-Bit Rock y Ambient Space, seleccionables mediante un selector interactivo en la barra superior con limpieza y reciclaje de sintetizadores en el AudioEngine.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "track_polyphony",
+      "description": "Soporte de polifonía en pistas instrumentales para la programación de acordes (Step Notes) en el Piano Roll, transformando los sintetizadores melódicos a Tone.PolySynth en el AudioEngine y garantizando retrocompatibilidad al migrar notas monofónicas previas a arreglos.",
+      "sdd": true,
+      "status": "done"
     }
   ]
 }
