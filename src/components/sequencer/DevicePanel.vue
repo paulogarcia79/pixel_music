@@ -314,7 +314,7 @@ const isPercussion = computed(() => {
             </button>
           </div>
 
-          <!-- T7, T8: Rejilla compacta de dos columnas con botones de 24px (h-6) y actualizacion al click -->
+          <!-- T7, T8, T9: Rejilla compacta de dos columnas con botones de 24px (h-6) y resaltado neón -->
           <div class="grid grid-cols-2 gap-1 overflow-y-auto max-h-[104px] pr-1 custom-scrollbar">
             <button
               v-for="inst in filteredInstruments"
