@@ -19,39 +19,54 @@ const selectedTrack = computed(() => {
   return store.currentTracks.find(t => t.name === store.selectedTrackName);
 });
 
-// Lista completa de instrumentos agrupados por categoría según specs (con strings para PixelIcon)
-const INSTRUMENTS: { type: InstrumentType; name: string; icon: string }[] = [
-  // Basic waveforms
-  { type: 'square', name: 'Square Wave', icon: 'cpu' },
-  { type: 'triangle', name: 'Triangle Wave', icon: 'cpu' },
-  { type: 'sawtooth', name: 'Sawtooth Wave', icon: 'cpu' },
-  { type: 'sine', name: 'Sine Wave', icon: 'cpu' },
-  { type: 'noise', name: 'Noise Generator', icon: 'cpu' },
-  
-  // Retro Synths
-  { type: 'bass_synth', name: 'Pixel Bass', icon: 'waves' },
-  { type: 'sub_bass', name: 'Sub Bass', icon: 'waves' },
-  { type: 'lead_synth', name: 'Lead Chiptune', icon: 'waves' },
-  { type: 'super_saw', name: 'Hyper Saw', icon: 'waves' },
-  { type: 'acid_synth', name: 'Acid Bassline', icon: 'waves' },
-  { type: 'pad', name: 'Chamber Pad', icon: 'waves' },
-  { type: 'fm_pluck', name: 'FM Pluck', icon: 'waves' },
-  { type: 'fm_bell', name: 'FM Bell', icon: 'waves' },
+type InstrumentCategory = 'WAV' | 'SYN' | 'DRM' | 'KEY';
 
-  // Percussion
-  { type: 'kick', name: '8bit Kick', icon: 'drum' },
-  { type: 'snare', name: 'Pixel Snare', icon: 'drum' },
-  { type: 'hihat', name: 'Metal HiHat', icon: 'drum' },
-  { type: 'tom', name: 'Retro Tom', icon: 'drum' },
-  { type: 'clap', name: 'Chipped Clap', icon: 'drum' },
-  
-  // Keys & Strings
-  { type: 'piano_pixel', name: 'Pixel Piano', icon: 'keyboard' },
-  { type: 'electric_piano', name: 'E-Piano', icon: 'keyboard' },
-  { type: 'organ_pixel', name: 'Pixel Organ', icon: 'keyboard' },
-  { type: 'guitar_pixel', name: 'Classic Guitar', icon: 'music' },
-  { type: 'guitar_dist', name: 'Power Chord', icon: 'music' },
-  { type: 'flute_pixel', name: 'Blowing Flute', icon: 'music' }
+interface InstrumentDefinition {
+  type: InstrumentType;
+  name: string;
+  icon: string;
+  category: InstrumentCategory;
+}
+
+// Lista completa de instrumentos agrupados por categoría según specs (con strings para PixelIcon)
+const INSTRUMENTS: InstrumentDefinition[] = [
+  // WAV
+  { type: 'square', name: 'Square Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'triangle', name: 'Triangle Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'sawtooth', name: 'Sawtooth Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'sine', name: 'Sine Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'noise', name: 'Noise Generator', icon: 'cpu', category: 'WAV' },
+  { type: 'pulse', name: 'Pulse Wave', icon: 'cpu', category: 'WAV' },
+  { type: 'pwm', name: 'PWM Oscillator', icon: 'cpu', category: 'WAV' },
+
+  // SYN
+  { type: 'bass_synth', name: 'Pixel Bass', icon: 'waves', category: 'SYN' },
+  { type: 'sub_bass', name: 'Sub Bass', icon: 'waves', category: 'SYN' },
+  { type: 'lead_synth', name: 'Lead Chiptune', icon: 'waves', category: 'SYN' },
+  { type: 'super_saw', name: 'Hyper Saw', icon: 'waves', category: 'SYN' },
+  { type: 'acid_synth', name: 'Acid Bassline', icon: 'waves', category: 'SYN' },
+  { type: 'pad', name: 'Chamber Pad', icon: 'waves', category: 'SYN' },
+  { type: 'fm_pluck', name: 'FM Pluck', icon: 'waves', category: 'SYN' },
+  { type: 'fm_bell', name: 'FM Bell', icon: 'waves', category: 'SYN' },
+
+  // DRM
+  { type: 'kick', name: '8bit Kick', icon: 'drum', category: 'DRM' },
+  { type: 'snare', name: 'Pixel Snare', icon: 'drum', category: 'DRM' },
+  { type: 'hihat', name: 'Metal HiHat', icon: 'drum', category: 'DRM' },
+  { type: 'tom', name: 'Retro Tom', icon: 'drum', category: 'DRM' },
+  { type: 'clap', name: 'Chipped Clap', icon: 'drum', category: 'DRM' },
+  { type: 'rimshot', name: 'Rimshot', icon: 'drum', category: 'DRM' },
+  { type: 'cowbell', name: 'Cowbell', icon: 'drum', category: 'DRM' },
+
+  // KEY
+  { type: 'piano_pixel', name: 'Pixel Piano', icon: 'keyboard', category: 'KEY' },
+  { type: 'electric_piano', name: 'E-Piano', icon: 'keyboard', category: 'KEY' },
+  { type: 'organ_pixel', name: 'Pixel Organ', icon: 'keyboard', category: 'KEY' },
+  { type: 'church_organ', name: 'Church Organ', icon: 'keyboard', category: 'KEY' },
+  { type: 'guitar_pixel', name: 'Classic Guitar', icon: 'music', category: 'KEY' },
+  { type: 'guitar_dist', name: 'Power Chord', icon: 'music', category: 'KEY' },
+  { type: 'flute_pixel', name: 'Blowing Flute', icon: 'music', category: 'KEY' },
+  { type: 'retro_brass', name: 'Retro Brass', icon: 'music', category: 'KEY' }
 ];
 
 // Propiedades computadas reactivas bidireccionales vinculadas al store
