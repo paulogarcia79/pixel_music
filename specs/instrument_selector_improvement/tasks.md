@@ -25,11 +25,11 @@ Este documento enumera los pasos concretos e incrementales para implementar la f
 
 ## Fase 3: Pruebas y Verificación de Calidad
 
-- [ ] T10 — Actualizar y ampliar la suite de pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la cobertura completa de los nuevos requerimientos:
+- [x] T10 — Actualizar y ampliar la suite de pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la cobertura completa de los nuevos requerimientos:
     *   Verificar que se muestren las 4 pestañas (`WAV`, `SYN`, `DRM`, `KEY`) al cargar el panel con una pista activa.
     *   Verificar que los botones de instrumento tengan el layout de dos columnas y la clase de altura compacta de `24px` (`h-6`).
     *   Verificar que al cambiar de pestaña activa (haciendo clic en otra pestaña), se filtren y muestren sólo los instrumentos correspondientes.
-    *   Verificar el auto-foco reactivo bidireccional: al cambiar el tipo de instrumento de la pista a percusión (ej. `kick`) o teclado (ej. `piano_pixel`), la pestaña activa cambia automáticamente a `DRM` o `KEY` respectivamente.
+    *   Verificar el auto-foco reactivo bidireccional: al cambiar el tipo de instrumento de la pista a percusión (ej. `kick`) o teclado (ej. `piano_pixel`), la pestaña activa cambia automáticamente a `DRM` o `KEY` respectively.
     *   Verificar que al hacer clic en un botón de instrumento se actualice la propiedad del store del secuenciador correspondientemente.
     Cubre: R1-R10.
 - [ ] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde. Cubre: R1-R10.

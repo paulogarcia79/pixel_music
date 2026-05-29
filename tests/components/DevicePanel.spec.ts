@@ -239,5 +239,118 @@ describe('DevicePanel.vue', () => {
     app.unmount();
     container.remove();
   });
+
+  it('R1-R10: verifies the complete redesigned instrument selector, layout grid, tabs, active classes, reactive store update and bidirectional auto-focus', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'square'; // WAV type
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp({
+      render() {
+        return h(DevicePanel, {
+          isOpen: true,
+          onToggle: () => {}
+        });
+      }
+    });
+
+    app.mount(container);
+    await nextTick();
+
+    // 1. Verify 4 tabs are visible
+    const tabs = Array.from(container.querySelectorAll('button')).filter(
+      btn => ['WAV', 'SYN', 'DRM', 'KEY'].includes(btn.textContent?.trim() || '')
+    );
+    expect(tabs.length).toBe(4);
+    expect(tabs[0].textContent?.trim()).toBe('WAV');
+    expect(tabs[1].textContent?.trim()).toBe('SYN');
+    expect(tabs[2].textContent?.trim()).toBe('DRM');
+    expect(tabs[3].textContent?.trim()).toBe('KEY');
+
+    // 2. Verify activeTab highlights correctly
+    // 'WAV' is active because track.type is 'square'
+    expect(tabs[0].className).toContain('text-neon-cyan');
+
+    // 3. Verify grid layout of 2 columns
+    const gridDiv = container.querySelector('.grid.grid-cols-2');
+    expect(gridDiv).not.toBeNull();
+
+    // 4. Verify compact height of 24px (h-6) on instrument buttons
+    const instButtons = Array.from(gridDiv!.querySelectorAll('button'));
+    expect(instButtons.length).toBeGreaterThan(0);
+    instButtons.forEach(btn => {
+      expect(btn.className).toContain('h-6');
+    });
+
+    // 5. Verify WAV instruments filter (square, triangle, sawtooth, sine, noise, pulse, pwm)
+    const wavNames = instButtons.map(btn => btn.textContent?.trim().toLowerCase());
+    expect(wavNames).toContain('square wave');
+    expect(wavNames).toContain('sawtooth wave');
+    expect(wavNames).not.toContain('pixel bass');
+
+    // 6. Verify clicking another tab changes category activeTab and filters
+    const synTab = tabs.find(t => t.textContent?.trim() === 'SYN');
+    expect(synTab).not.toBeUndefined();
+    
+    // Simular click
+    synTab!.dispatchEvent(new Event('click'));
+    await nextTick();
+
+    // Now active tab is 'SYN'
+    expect(synTab!.className).toContain('text-neon-cyan');
+    
+    const synGridDiv = container.querySelector('.grid.grid-cols-2');
+    const synButtons = Array.from(synGridDiv!.querySelectorAll('button'));
+    const synNames = synButtons.map(btn => btn.textContent?.trim().toLowerCase());
+    expect(synNames).toContain('pixel bass');
+    expect(synNames).toContain('sub bass');
+    expect(synNames).not.toContain('square wave');
+
+    // 7. Verify clicking instrument button updates the store reactively
+    const bassBtn = synButtons.find(btn => btn.textContent?.trim().toLowerCase() === 'pixel bass');
+    expect(bassBtn).not.toBeUndefined();
+    bassBtn!.dispatchEvent(new Event('click'));
+    await nextTick();
+
+    // Store is updated
+    expect(track.type).toBe('bass_synth');
+
+    // 8. Verify reactive bidirectional auto-focus: when track type changes externally, activeTab switches
+    track.type = 'kick'; // DRM category
+    await nextTick();
+
+    const drmTab = Array.from(container.querySelectorAll('button')).find(
+      btn => btn.textContent?.trim() === 'DRM'
+    );
+    expect(drmTab).not.toBeUndefined();
+    // DRM tab is automatically highlighted
+    expect(drmTab!.className).toContain('text-neon-cyan');
+
+    // Verify grid filters to DRM instruments
+    const drmGridDiv = container.querySelector('.grid.grid-cols-2');
+    const drmButtons = Array.from(drmGridDiv!.querySelectorAll('button'));
+    const drmNames = drmButtons.map(btn => btn.textContent?.trim().toLowerCase());
+    expect(drmNames).toContain('8bit kick');
+    expect(drmNames).toContain('pixel snare');
+    expect(drmNames).not.toContain('pixel bass');
+
+    // Switch to trad key instrument externally
+    track.type = 'piano_pixel'; // KEY category
+    await nextTick();
+
+    const keyTab = Array.from(container.querySelectorAll('button')).find(
+      btn => btn.textContent?.trim() === 'KEY'
+    );
+    expect(keyTab).not.toBeUndefined();
+    expect(keyTab!.className).toContain('text-neon-cyan');
+
+    app.unmount();
+    container.remove();
+  });
 });
 
