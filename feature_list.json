@@ -50,6 +50,12 @@
       "description": "Corregir el volumen inaudible de kick, tom, conga y woodblock modulando la nota tonal correcta en lugar del valor estático 16n en el AudioEngine.",
       "sdd": false,
       "status": "done"
+    },
+    {
+      "name": "instruments_expansion",
+      "description": "Ampliación del catálogo de instrumentos a 33 tipos en la UI y el motor de audio, introduciendo fat_square, retro_laser y retro_explosion con barrido de filtros analógicos chiptune.",
+      "sdd": false,
+      "status": "done"
     }
   ]
 }
