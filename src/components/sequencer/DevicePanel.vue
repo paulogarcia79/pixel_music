@@ -78,7 +78,7 @@ const filteredInstruments = computed(() => {
   return INSTRUMENTS.filter(inst => inst.category === activeTab.value);
 });
 
-// T5: Auto-foco reactivo bidireccional (watch de pista activa -> pestaña de categoría)
+// T5: Auto-foco reactivo bidireccional síncrono (watch de pista activa -> pestaña de categoría)
 watch(
   () => selectedTrack.value?.type,
   (newType) => {
