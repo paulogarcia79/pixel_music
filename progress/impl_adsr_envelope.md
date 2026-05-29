@@ -53,3 +53,8 @@ Este documento mapea cada requerimiento funcional `R<n>` establecido en la espec
 ### R12 — Modulación ADSR y Modelado Físico en Exportación Offline
 - **QUÉ**: CUANDO el usuario realice una exportación offline (`exportAudioOffline` en `AudioEngine`), el sistema DEBE aplicar los parámetros ADSR completos (y Dampening/Resonance para `guitar_pixel`) de cada pista al motor de síntesis offline para cada nota programada.
 - **TEST**: `tests/audioEngine.spec.ts` -> `"R12: exportAudioOffline should apply ADSR and physical modeling parameters to the offline synths"`
+
+### R13 — Ocultamiento de Controles ADSR y Gráfico SVG en Pistas de Percusión
+- **QUÉ**: MIENTRAS la pista activa seleccionada sea del tipo de instrumento percusivo, el sistema NO DEBE mostrar las perillas ADSR ni la curva SVG de envolvente, y DEBE mostrar un bloque de mensaje explicativo que indique que la envolvente transitoria es gestionada automáticamente por el sintetizador.
+- **TEST**: `tests/components/DevicePanel.spec.ts` -> `"R13: hides ADSR controls and SVG envelope shape when active track is percussion, displaying instead the transient envelope explanation"`
+
