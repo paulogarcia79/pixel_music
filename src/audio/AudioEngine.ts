@@ -198,6 +198,15 @@ export class AudioEngine {
     }
   }
 
+  public static clearAllSynths(): void {
+    this.trackNodes.forEach((nodes) => {
+      nodes.synth.dispose();
+      nodes.reverb.dispose();
+      nodes.delay.dispose();
+    });
+    this.trackNodes.clear();
+  }
+
   private static setupLoop() {
     const store = useSequencerStore();
     Tone.Transport.scheduleRepeat((time) => {

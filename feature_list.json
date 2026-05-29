@@ -14,6 +14,12 @@
       "description": "Rediseño de interfaz de usuario de Pixel Music para maximizar la usabilidad: panel de rack sintetizador inferior (estilo Eurorack de pixel art), barra lateral de pistas delgada con iconos de instrumentos, navegación de octavas y asistente de escalas en el Piano Roll, y un Song Arranger visual por carriles neón.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "pattern_presets",
+      "description": "Biblioteca de ritmos predefinidos (Pattern Presets) para iniciar la creación de música con estilos retro como Chiptune Techno, Synthwave Retro, 8-Bit Rock y Ambient Space, seleccionables mediante un selector interactivo en la barra superior con limpieza y reciclaje de sintetizadores en el AudioEngine.",
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

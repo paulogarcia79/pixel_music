@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import * as Tone from 'tone';
+import { AudioEngine } from '../audio/AudioEngine';
 
 export type InstrumentType = 
   | 'square' | 'triangle' | 'sawtooth' | 'noise' | 'sine' | 'pulse' | 'pwm' 
@@ -39,6 +40,210 @@ export interface ArrangerTrack {
   name: string;
   placements: PatternPlacement[];
 }
+
+export interface PresetDefinition {
+  name: string;
+  bpm: number;
+  tracks: TrackInstance[];
+}
+
+export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
+  'Chiptune Techno': {
+    name: 'Chiptune Techno',
+    bpm: 130,
+    tracks: [
+      {
+        name: 'Kick',
+        notes: { 1: 'C2', 5: 'C2', 9: 'C2', 13: 'C2', 17: 'C2', 21: 'C2', 25: 'C2', 29: 'C2' },
+        type: 'kick',
+        volume: -8,
+        reverbWet: 0.1,
+        delayWet: 0.0,
+        muted: false,
+        attack: 0.01,
+        release: 0.4
+      },
+      {
+        name: 'Hihat',
+        notes: { 3: 'C4', 7: 'C4', 11: 'C4', 15: 'C4', 19: 'C4', 23: 'C4', 27: 'C4', 31: 'C4' },
+        type: 'hihat',
+        volume: -12,
+        reverbWet: 0.2,
+        delayWet: 0.1,
+        muted: false,
+        attack: 0.01,
+        release: 0.05
+      },
+      {
+        name: 'Bass',
+        notes: { 1: 'C3', 4: 'Eb3', 7: 'G3', 10: 'Bb3', 13: 'C3', 16: 'Eb3', 19: 'G3', 22: 'Bb3', 25: 'C3', 28: 'Eb3', 31: 'G3' },
+        type: 'acid_synth',
+        volume: -10,
+        reverbWet: 0.1,
+        delayWet: 0.2,
+        muted: false,
+        attack: 0.01,
+        release: 0.2
+      },
+      {
+        name: 'Lead',
+        notes: { 5: 'C4', 9: 'G4', 13: 'C5', 21: 'Bb4', 25: 'G4' },
+        type: 'square',
+        volume: -10,
+        reverbWet: 0.3,
+        delayWet: 0.3,
+        muted: false,
+        attack: 0.02,
+        release: 0.4
+      }
+    ]
+  },
+  'Synthwave Retro': {
+    name: 'Synthwave Retro',
+    bpm: 120,
+    tracks: [
+      {
+        name: 'Kick',
+        notes: { 1: 'C2', 9: 'C2', 17: 'C2', 25: 'C2' },
+        type: 'kick',
+        volume: -8,
+        reverbWet: 0.1,
+        delayWet: 0.0,
+        muted: false,
+        attack: 0.01,
+        release: 0.4
+      },
+      {
+        name: 'Snare',
+        notes: { 5: 'C4', 13: 'C4', 21: 'C4', 29: 'C4' },
+        type: 'snare',
+        volume: -10,
+        reverbWet: 0.3,
+        delayWet: 0.0,
+        muted: false,
+        attack: 0.01,
+        release: 0.1
+      },
+      {
+        name: 'Bass',
+        notes: { 1: 'C3', 3: 'C3', 5: 'C3', 7: 'C3', 9: 'C3', 11: 'C3', 13: 'C3', 15: 'C3', 17: 'C3', 19: 'C3', 21: 'C3', 23: 'C3', 25: 'C3', 27: 'C3', 29: 'C3', 31: 'C3' },
+        type: 'bass_synth',
+        volume: -8,
+        reverbWet: 0.1,
+        delayWet: 0.1,
+        muted: false,
+        attack: 0.01,
+        release: 0.3
+      },
+      {
+        name: 'Pad',
+        notes: { 1: 'C4', 17: 'G4' },
+        type: 'pad',
+        volume: -12,
+        reverbWet: 0.5,
+        delayWet: 0.4,
+        muted: false,
+        attack: 0.4,
+        release: 1.2
+      }
+    ]
+  },
+  '8-Bit Rock': {
+    name: '8-Bit Rock',
+    bpm: 140,
+    tracks: [
+      {
+        name: 'Drums',
+        notes: { 1: 'C4', 5: 'C4', 9: 'C4', 13: 'C4', 17: 'C4', 21: 'C4', 25: 'C4', 29: 'C4' },
+        type: 'noise',
+        volume: -10,
+        reverbWet: 0.1,
+        delayWet: 0.0,
+        muted: false,
+        attack: 0.01,
+        release: 0.05
+      },
+      {
+        name: 'Bass',
+        notes: { 1: 'C3', 5: 'Eb3', 9: 'F3', 13: 'G3', 17: 'C3', 21: 'Eb3', 25: 'F3', 29: 'Bb3' },
+        type: 'sub_bass',
+        volume: -6,
+        reverbWet: 0.0,
+        delayWet: 0.0,
+        muted: false,
+        attack: 0.01,
+        release: 0.2
+      },
+      {
+        name: 'Guitar',
+        notes: { 1: 'C4', 3: 'Eb4', 5: 'F4', 7: 'G4', 9: 'C4', 11: 'Eb4', 13: 'F4', 15: 'G4' },
+        type: 'guitar_dist',
+        volume: -12,
+        reverbWet: 0.2,
+        delayWet: 0.2,
+        muted: false,
+        attack: 0.02,
+        release: 0.4
+      }
+    ]
+  },
+  'Ambient Space': {
+    name: 'Ambient Space',
+    bpm: 90,
+    tracks: [
+      {
+        name: 'Pluck',
+        notes: { 1: 'C4', 5: 'G4', 9: 'C5', 13: 'D5', 17: 'G4', 21: 'C5', 25: 'D5', 29: 'G5' },
+        type: 'fm_pluck',
+        volume: -12,
+        reverbWet: 0.6,
+        delayWet: 0.5,
+        muted: false,
+        attack: 0.1,
+        release: 0.8
+      },
+      {
+        name: 'Bell',
+        notes: { 3: 'E5', 11: 'G5', 19: 'C6', 27: 'B5' },
+        type: 'fm_bell',
+        volume: -14,
+        reverbWet: 0.7,
+        delayWet: 0.6,
+        muted: false,
+        attack: 0.05,
+        release: 1.5
+      },
+      {
+        name: 'Slow Pad',
+        notes: { 1: 'C3', 17: 'F3' },
+        type: 'pad',
+        volume: -12,
+        reverbWet: 0.8,
+        delayWet: 0.4,
+        muted: false,
+        attack: 0.8,
+        release: 2.0
+      }
+    ]
+  },
+  'Empty': {
+    name: 'Empty',
+    bpm: 120,
+    tracks: [
+      {
+        name: 'Track 1',
+        notes: {},
+        type: 'square',
+        volume: -10,
+        reverbWet: 0.1,
+        delayWet: 0.1,
+        muted: false,
+        attack: 0.01,
+        release: 0.5
+      }
+    ]
+  }
+};
 
 export const useSequencerStore = defineStore('sequencer', {
   state: () => ({
@@ -266,6 +471,27 @@ export const useSequencerStore = defineStore('sequencer', {
     clearTrackNotes(trackName: string) {
       const track = this.getTrackInPattern(trackName);
       if (track) track.notes = {};
+    },
+    loadPreset(presetName: string) {
+      const preset = PATTERN_PRESETS[presetName];
+      if (!preset) return;
+
+      // 1. Limpiar nodos del motor de audio
+      AudioEngine.clearAllSynths();
+
+      // 2. Sobreescribir las pistas del patrón activo
+      const currentPattern = this.patterns[this.currentPatternId];
+      if (currentPattern) {
+        currentPattern.tracks = JSON.parse(JSON.stringify(preset.tracks));
+      }
+
+      // 3. Modificar BPM
+      this.setBpm(preset.bpm);
+
+      // 4. Seleccionar la primera pista por defecto
+      if (preset.tracks.length > 0) {
+        this.selectedTrackName = preset.tracks[0].name;
+      }
     }
   }
 });

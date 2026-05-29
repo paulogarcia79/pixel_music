@@ -37,3 +37,19 @@
 - [x] Implementación de todas las fases (Fase 1 a 6) completada con éxito.
 - [x] Compilación y entorno validados en verde mediante `./init.sh`.
 - [x] Esperando validación final y aprobación del subagente `reviewer` (APROBADO).
+
+## Sesión: Biblioteca de Ritmos (Pattern Presets) (2026-05-28)
+### Feature en curso
+- `pattern_presets` (Biblioteca de ritmos predefinidos)
+
+### Plan
+- [x] T1 — Implementar limpieza de sintes en AudioEngine. Cubre: R3.
+- [x] T2 — Definir constantes y acción de Presets en el Store. Cubre: R1, R3, R4, R5, R6.
+- [x] T3 — Configurar carga inicial por defecto. Cubre: R1.
+- [x] T4 — Añadir selector visual en la Barra Superior (Transport). Cubre: R2, R3, R4, R5, R6, R7.
+- [x] T5 — Escribir Tests de Verificación. Cubre: R1, R3, R4, R5, R6, R7.
+- [x] T6 — Ejecución y Verificación Final. Cubre: R1-R7.
+
+- [x] Implementación completada con éxito y verificado con 100% de tests en verde.
+- [x] Aprobado por el subagente `reviewer` con reporte en `progress/review_pattern_presets.md`.
+

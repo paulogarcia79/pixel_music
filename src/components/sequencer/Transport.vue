@@ -78,14 +78,33 @@ const importProject = (event: Event) => {
   reader.readAsText(file);
 };
 
+const selectedPreset = ref('Chiptune Techno');
+
+const handlePresetChange = (e: Event) => {
+  const val = (e.target as HTMLSelectElement).value;
+  selectedPreset.value = val;
+  store.loadPreset(val);
+};
+
+let unsubscribePresetSync: () => void;
+
 onMounted(() => {
   stateCheckInterval = window.setInterval(() => {
     isPlaying.value = Tone.Transport.state === 'started';
   }, 100);
+
+  unsubscribePresetSync = store.$onAction(({ name, args }) => {
+    if (name === 'loadPreset') {
+      selectedPreset.value = args[0];
+    } else if (name === 'clearAll' || name === 'clearCurrentPattern') {
+      selectedPreset.value = 'Empty';
+    }
+  });
 });
 
 onUnmounted(() => {
   clearInterval(stateCheckInterval);
+  if (unsubscribePresetSync) unsubscribePresetSync();
 });
 </script>
 
@@ -158,6 +177,21 @@ onUnmounted(() => {
         Import
         <input type="file" @change="importProject" class="hidden" accept=".json" />
       </label>
+    </div>
+
+    <div class="flex items-center gap-2 border-l border-grid-line pl-4 mr-2">
+      <span class="text-xs uppercase text-neon-cyan font-bold tracking-wider">Presets:</span>
+      <select 
+        :value="selectedPreset"
+        @change="handlePresetChange"
+        class="bg-dark-bg text-neon-cyan border border-neon-cyan text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-neon-pink focus:border-neon-pink shadow-[0_0_10px_rgba(5,217,232,0.3)] hover:bg-neon-cyan/20 cursor-pointer transition-all duration-300"
+      >
+        <option value="Chiptune Techno" class="bg-dark-bg text-neon-cyan">Chiptune Techno</option>
+        <option value="Synthwave Retro" class="bg-dark-bg text-neon-cyan">Synthwave Retro</option>
+        <option value="8-Bit Rock" class="bg-dark-bg text-neon-cyan">8-Bit Rock</option>
+        <option value="Ambient Space" class="bg-dark-bg text-neon-cyan">Ambient Space</option>
+        <option value="Empty" class="bg-dark-bg text-neon-cyan">Empty (Limpiar Todo)</option>
+      </select>
     </div>
     
     <div class="flex items-center gap-2">

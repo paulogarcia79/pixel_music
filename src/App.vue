@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Transport from './components/sequencer/Transport.vue';
 import PianoRoll from './components/sequencer/PianoRoll.vue';
 import SongArranger from './components/sequencer/SongArranger.vue';
@@ -11,6 +11,10 @@ import { AudioEngine } from './audio/AudioEngine';
 const store = useSequencerStore();
 
 const isDevicePanelOpen = ref(true);
+
+onMounted(() => {
+  store.loadPreset('Chiptune Techno');
+});
 
 // Mapeo estructurado de tipos de instrumentos a iconos y categorías (R10)
 const INSTRUMENT_CATEGORIES: Record<InstrumentType, { icon: string; category: string }> = {
