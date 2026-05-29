@@ -344,7 +344,7 @@ export class AudioEngine {
             const type = track.type;
             if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
               if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
-                const noteToPlay = (notes && notes.length > 0) ? notes[0] : (type === 'kick' ? 'C2' : 'C3');
+                const noteToPlay = (notes && notes.length > 0 && notes[0]) ? notes[0] : (type === 'kick' ? 'C2' : 'C3');
                 nodes.synth.triggerAttackRelease(noteToPlay, '16n', time);
               } else {
                 nodes.synth.triggerAttackRelease('16n', time);
@@ -516,7 +516,8 @@ export class AudioEngine {
         const type = d.track.type;
         if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
           if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
-            const noteToPlay = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : (type === 'kick' ? 'C2' : 'C3');
+            const rawNote = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : null;
+            const noteToPlay = rawNote || (type === 'kick' ? 'C2' : 'C3');
             n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);
           } else {
             n.synth.triggerAttackRelease('16n', d.t);

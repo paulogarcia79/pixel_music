@@ -193,4 +193,88 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     // Verify triggerAttackRelease was called with the chord notes
     expect(triggerAttackReleaseSpy).toHaveBeenCalledWith(['C4', 'E4', 'G4'], '16n', 0);
   });
+
+  it('should trigger tonal percussion instruments with correct notes and 16n duration in setupLoop', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+
+    // Configurar track 1 como kick
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'kick';
+    track.notes[1] = ['C2'];
+
+    (Tone.Transport.scheduleRepeat as any).mockClear();
+    const scheduleRepeatSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
+    await AudioEngine.initialize();
+    const tickCallback = scheduleRepeatSpy.mock.calls[0][0];
+
+    const triggerSpy = vi.spyOn(Tone.MembraneSynth.prototype, 'triggerAttackRelease');
+
+    store.currentStep = 1;
+    store.isSongMode = false;
+    
+    // Con notas en grid
+    tickCallback(0);
+    expect(triggerSpy).toHaveBeenCalledWith('C2', '16n', 0);
+
+    // Con notas vacías o falsy, debería usar fallback 'C2' para kick
+    track.notes[1] = [''];
+    tickCallback(0.5);
+    expect(triggerSpy).toHaveBeenCalledWith('C2', '16n', 0.5);
+
+    // Probar tom con fallback 'C3'
+    track.type = 'tom';
+    track.notes[1] = [''];
+    // Limpiamos los synths del engine para que cree uno nuevo de tipo 'tom'
+    AudioEngine.clearAllSynths();
+    tickCallback(1.0);
+    expect(triggerSpy).toHaveBeenCalledWith('C3', '16n', 1.0);
+  });
+
+  it('should trigger tonal percussion instruments with correct note and duration in playNote', async () => {
+    const triggerSpy = vi.spyOn(Tone.MembraneSynth.prototype, 'triggerAttackRelease');
+
+    // playNote con note especificado
+    AudioEngine.playNote('G2', '16n', 'tom', 'Preview');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(triggerSpy).toHaveBeenCalledWith('G2', '16n');
+
+    // playNote con nota vacía (fallback a 'C2')
+    AudioEngine.playNote('', '16n', 'kick', 'Preview');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(triggerSpy).toHaveBeenCalledWith('C2', '16n');
+  });
+
+  it('should trigger tonal percussion instruments with correct note and duration in exportAudioOffline', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'conga';
+    track.notes[1] = ['E3'];
+
+    const offlineSpy = vi.spyOn(Tone, 'Offline').mockImplementation(async (callback: any) => {
+      const mockContext = { destination: {} };
+      const triggerSpy = vi.spyOn(Tone.MembraneSynth.prototype, 'triggerAttackRelease');
+      
+      await callback(mockContext);
+
+      expect(triggerSpy).toHaveBeenCalledWith('E3', '16n', 0);
+
+      const mockBuffer = {
+        get: vi.fn(() => ({
+          numberOfChannels: 2,
+          length: 100,
+          sampleRate: 44100,
+          getChannelData: vi.fn(() => new Float32Array(100))
+        }))
+      };
+      return mockBuffer as any;
+    });
+
+    await AudioEngine.exportAudioOffline();
+    expect(offlineSpy).toHaveBeenCalled();
+  });
 });
