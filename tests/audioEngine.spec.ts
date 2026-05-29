@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSequencerStore } from '../src/stores/sequencer';
-import { AudioEngine, PolyPluckSynth } from '../src/audio/AudioEngine';
+import { AudioEngine, PolyPluckSynth, ExplosionSynth } from '../src/audio/AudioEngine';
 import * as Tone from 'tone';
 
 describe('AudioEngine (ADSR and Physical Modeling)', () => {
@@ -308,6 +308,21 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
       expect(noiseTriggerSpy).toHaveBeenCalled();
       expect(filterFreqSpy.setValueAtTime).toHaveBeenCalledWith(1000, expect.any(Number));
       expect(filterFreqSpy.exponentialRampToValueAtTime).toHaveBeenCalledWith(100, expect.any(Number));
+    });
+
+    it('should expose a volume Param of type Tone.Param and support setValueAtTime for ExplosionSynth', () => {
+      const mockContext = Tone.getContext();
+      const synth = new ExplosionSynth({ context: mockContext });
+      
+      expect(synth.volume).toBeDefined();
+      expect(synth.volume.setValueAtTime).toBeDefined();
+      
+      const time = 0.5;
+      synth.volume.setValueAtTime(-12, time);
+      
+      expect(synth.volume.setValueAtTime).toHaveBeenCalledWith(-12, time);
+      
+      synth.dispose();
     });
   });
 });

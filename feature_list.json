@@ -56,6 +56,12 @@
       "description": "Ampliación del catálogo de instrumentos a 33 tipos en la UI y el motor de audio, introduciendo fat_square, retro_laser y retro_explosion con barrido de filtros analógicos chiptune.",
       "sdd": false,
       "status": "done"
+    },
+    {
+      "name": "explosion_synth_volume_fix",
+      "description": "Fix the volume issue in ExplosionSynth inside src/audio/AudioEngine.ts by exposing a Tone.Param<\"decibels\"> volume signal instead of a raw Tone.Volume node, so that .volume.setValueAtTime works correctly.",
+      "sdd": true,
+      "status": "in_progress"
     }
   ]
 }

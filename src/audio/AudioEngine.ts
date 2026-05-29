@@ -8,16 +8,18 @@ interface TrackNodes {
   currentType: InstrumentType;
 }
 
-class ExplosionSynth {
+export class ExplosionSynth {
   private noise: Tone.NoiseSynth;
   private filter: Tone.Filter;
-  public volume: Tone.Volume;
+  private volumeNode: Tone.Volume;
+  public volume: Tone.Param<"decibels">;
   private context: Tone.BaseContext;
 
   constructor(options: { context: Tone.BaseContext }) {
     this.context = options.context;
-    this.volume = new Tone.Volume({ context: this.context });
-    this.filter = new Tone.Filter({ context: this.context, type: 'lowpass', frequency: 800, Q: 2 }).connect(this.volume);
+    this.volumeNode = new Tone.Volume({ context: this.context });
+    this.volume = this.volumeNode.volume;
+    this.filter = new Tone.Filter({ context: this.context, type: 'lowpass', frequency: 800, Q: 2 }).connect(this.volumeNode);
     this.noise = new Tone.NoiseSynth({
       context: this.context,
       noise: { type: 'white' },
@@ -26,7 +28,7 @@ class ExplosionSynth {
   }
 
   public connect(dest: Tone.ToneAudioNode) {
-    this.volume.connect(dest);
+    this.volumeNode.connect(dest);
     return this;
   }
 
@@ -50,7 +52,7 @@ class ExplosionSynth {
   public dispose() {
     this.noise.dispose();
     this.filter.dispose();
-    this.volume.dispose();
+    this.volumeNode.dispose();
     return this;
   }
 }
