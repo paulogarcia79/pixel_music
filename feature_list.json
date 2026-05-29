@@ -61,7 +61,7 @@
       "name": "explosion_synth_volume_fix",
       "description": "Fix the volume issue in ExplosionSynth inside src/audio/AudioEngine.ts by exposing a Tone.Param<\"decibels\"> volume signal instead of a raw Tone.Volume node, so that .volume.setValueAtTime works correctly.",
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     }
   ]
 }

@@ -182,3 +182,17 @@
 - [x] Todas las pruebas (71 tests en verde) pasan perfectamente.
 - [x] Compilación de producción validada exitosamente.
 - [x] Aprobado por el subagente `reviewer` con veredicto APPROVED en `progress/review_instruments_expansion.md`.
+
+## Sesión: Corrección de Bug de Volumen en Pixel Explosion (2026-05-29)
+### Feature en curso
+- `explosion_synth_volume_fix` (en la rama `bugfix/explosion-synth-volume`)
+
+### Plan
+- [x] T1 — Modificar `ExplosionSynth` en `src/audio/AudioEngine.ts` para que declare un nodo privado `volumeNode: Tone.Volume` y exponga la señal pública de volumen `volume: Tone.Param<"decibels">`.
+- [x] T2 — Actualizar los flujos de conexionado `connect` y liberación `dispose` en `ExplosionSynth`.
+- [x] T3 — Añadir prueba de cobertura y validación en `tests/audioEngine.spec.ts` para verificar la propiedad `volume` y que responda exitosamente a `.setValueAtTime`.
+- [x] T4 — Ejecutar `./init.sh` en el workspace para certificar que todo compile y que todas las 72 pruebas pasen exitosamente al 100% en verde.
+- [x] T5 — Crear la rama independiente `bugfix/explosion-synth-volume` y realizar push al repositorio remoto de origen en GitHub.
+
+- [x] Bug reportado por el usuario con Pixel Explosion solucionado por completo.
+- [x] Toda la suite completa de 72 pruebas pasa al 100% de éxito.
