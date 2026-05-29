@@ -135,4 +135,67 @@ describe('DevicePanel.vue', () => {
     app.unmount();
     container.remove();
   });
+
+  it('R5, R6, R7, R8: supports Decay/Sustain knobs, conditional Physical Modeling and SVG updates', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'square';
+    track.attack = 0.1;
+    track.decay = 0.2;
+    track.sustain = 0.7;
+    track.release = 0.5;
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp({
+      render() {
+        return h(DevicePanel, {
+          isOpen: true,
+          onToggle: () => {}
+        });
+      }
+    });
+
+    app.mount(container);
+    await nextTick();
+
+    // R5: Verify the page contains labels/controls for Attack, Decay, Sustain, Release
+    expect(container.textContent).toContain('Attack');
+    expect(container.textContent).toContain('Decay');
+    expect(container.textContent).toContain('Sustain');
+    expect(container.textContent).toContain('Release');
+
+    // R7: Since instrument is 'square' (not guitar_pixel), Dampening and Resonance must NOT be shown
+    expect(container.textContent).not.toContain('Physical Modeling');
+    expect(container.textContent).not.toContain('Dampening');
+    expect(container.textContent).not.toContain('Resonance');
+
+    // Change instrument to 'guitar_pixel'
+    track.type = 'guitar_pixel';
+    await nextTick();
+
+    // R6: Since instrument is now 'guitar_pixel', Physical Modeling controls must be visible
+    expect(container.textContent).toContain('Physical Modeling');
+    expect(container.textContent).toContain('Dampening');
+    expect(container.textContent).toContain('Resonance');
+
+    // Get SVG path for envelope
+    const path = container.querySelector('svg path[stroke="#ff2a6d"]') as SVGPathElement;
+    expect(path).not.toBeNull();
+    const dBefore = path.getAttribute('d');
+
+    // R8: Modify decay and sustain, SVG must react
+    track.decay = 0.5;
+    track.sustain = 0.3;
+    await nextTick();
+
+    const dAfter = path.getAttribute('d');
+    expect(dBefore).not.toBe(dAfter);
+
+    app.unmount();
+    container.remove();
+  });
 });

@@ -17,10 +17,10 @@ Este documento enumera los pasos concretos e incrementales para implementar la f
 
 ## Fase 2: Interfaz de Usuario (Device Panel Eurorack)
 
-- [ ] T7 — Integrar dos nuevas perillas `<Knob />` vinculadas de forma reactiva y bidireccional a los parámetros de `Decay` y `Sustain` de la pista activa seleccionada en `src/components/sequencer/DevicePanel.vue`. Cubre: R5.
-- [ ] T8 — Implementar en `DevicePanel.vue` la subsección interactiva condicional `Physical Modeling` con perillas `<Knob />` específicas para `Dampening` y `Resonance` que se renderice únicamente cuando el tipo de sintetizador sea `guitar_pixel`. Cubre: R6, R7.
-- [ ] T9 — Rediseñar las fórmulas computadas de dimensionamiento (`aWidth`, `rWidth`, `dw`, `sh`) y la trayectoria SVG `envelopePath` en `DevicePanel.vue` para proyectar fielmente en el minigráfico los cambios en tiempo real del ADSR. Cubre: R8.
-- [ ] T10 — Actualizar y escribir pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la interactividad de las nuevas perillas, la visibilidad condicional de los controles de modelado físico y que la curva SVG cambie dinámicamente. Cubre: R5, R6, R7, R8.
+- [x] T7 — Integrar dos nuevas perillas `<Knob />` vinculadas de forma reactiva y bidireccional a los parámetros de `Decay` y `Sustain` de la pista activa seleccionada en `src/components/sequencer/DevicePanel.vue`. Cubre: R5.
+- [x] T8 — Implementar en `DevicePanel.vue` la subsección interactiva condicional `Physical Modeling` con perillas `<Knob />` específicas para `Dampening` y `Resonance` que se renderice únicamente cuando el tipo de sintetizador sea `guitar_pixel`. Cubre: R6, R7.
+- [x] T9 — Rediseñar las fórmulas computadas de dimensionamiento (`aWidth`, `rWidth`, `dw`, `sh`) y la trayectoria SVG `envelopePath` en `DevicePanel.vue` para proyectar fielmente en el minigráfico los cambios en tiempo real del ADSR. Cubre: R8.
+- [x] T10 — Actualizar y escribir pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la interactividad de las nuevas perillas, la visibilidad condicional de los controles de modelado físico y que la curva SVG cambie dinámicamente. Cubre: R5, R6, R7, R8.
 
 ---
 

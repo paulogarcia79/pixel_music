@@ -72,7 +72,47 @@ const trackAttack = computed({
   },
   set(val) {
     if (selectedTrack.value) {
-      store.setTrackADSR(selectedTrack.value.name, val, selectedTrack.value.release);
+      store.setTrackADSR(
+        selectedTrack.value.name,
+        val,
+        selectedTrack.value.decay,
+        selectedTrack.value.sustain,
+        selectedTrack.value.release
+      );
+    }
+  }
+});
+
+const trackDecay = computed({
+  get() {
+    return selectedTrack.value?.decay ?? 0.1;
+  },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackADSR(
+        selectedTrack.value.name,
+        selectedTrack.value.attack,
+        val,
+        selectedTrack.value.sustain,
+        selectedTrack.value.release
+      );
+    }
+  }
+});
+
+const trackSustain = computed({
+  get() {
+    return selectedTrack.value?.sustain ?? 0.8;
+  },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackADSR(
+        selectedTrack.value.name,
+        selectedTrack.value.attack,
+        selectedTrack.value.decay,
+        val,
+        selectedTrack.value.release
+      );
     }
   }
 });
@@ -83,7 +123,35 @@ const trackRelease = computed({
   },
   set(val) {
     if (selectedTrack.value) {
-      store.setTrackADSR(selectedTrack.value.name, selectedTrack.value.attack, val);
+      store.setTrackADSR(
+        selectedTrack.value.name,
+        selectedTrack.value.attack,
+        selectedTrack.value.decay,
+        selectedTrack.value.sustain,
+        val
+      );
+    }
+  }
+});
+
+const trackDampening = computed({
+  get() {
+    return selectedTrack.value?.dampening ?? 4000;
+  },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackPhysicalModel(selectedTrack.value.name, val, selectedTrack.value.resonance);
+    }
+  }
+});
+
+const trackResonance = computed({
+  get() {
+    return selectedTrack.value?.resonance ?? 0.95;
+  },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackPhysicalModel(selectedTrack.value.name, selectedTrack.value.dampening, val);
     }
   }
 });
@@ -111,31 +179,36 @@ const trackDelay = computed({
 });
 
 // Lógica de cálculo para el visualizador interactivo SVG de la envolvente ADSR
-const aWidth = computed(() => {
+const aw = computed(() => {
   const attack = trackAttack.value;
-  // Mapea linealmente de 0.001s a 2.0s al rango 0px a 80px
-  const pct = (attack - 0.001) / (2.0 - 0.001);
-  return pct * 80;
+  return ((attack - 0.001) / 2) * 45;
 });
 
-const rWidth = computed(() => {
-  const release = trackRelease.value;
-  // Mapea linealmente de 0.01s a 4.0s al rango 5px a 80px
-  const pct = (release - 0.01) / (4.0 - 0.01);
-  return 5 + pct * 75;
+const dw = computed(() => {
+  const decay = trackDecay.value;
+  return ((decay - 0.01) / 2) * 45;
 });
+
+const sh = computed(() => {
+  const sustain = trackSustain.value;
+  return 80 - (sustain * 70);
+});
+
+const rw = computed(() => {
+  const release = trackRelease.value;
+  return ((release - 0.01) / 4) * 50;
+});
+
+const sw = 25; // constante
 
 const envelopePath = computed(() => {
-  const aw = aWidth.value;
-  const rw = rWidth.value;
-  
-  const pStart = 'M 0 80';
-  const pAttack = `L ${aw} 10`;
-  const pDecay = `L ${aw + 15} 31`;
-  const pSustain = `L ${aw + 15 + 40} 31`;
-  const pRelease = `L ${aw + 15 + 40 + rw} 80`;
-  
-  return `${pStart} ${pAttack} ${pDecay} ${pSustain} ${pRelease}`;
+  const a = aw.value;
+  const d = dw.value;
+  const h = sh.value;
+  const r = rw.value;
+  const s = sw;
+
+  return `M 0 80 L ${a} 10 L ${a + d} ${h} L ${a + d + s} ${h} L ${a + d + s + r} 80`;
 });
 </script>
 
@@ -198,7 +271,7 @@ const envelopePath = computed(() => {
           </div>
         </div>
 
-        <!-- 2. ADSR ENVELOPE SECTION (Attack / Release + Visualizador) -->
+        <!-- 2. ADSR ENVELOPE SECTION (Attack / Decay / Sustain / Release + Visualizador) -->
         <div class="flex-[1.5] px-4 flex justify-between gap-4">
           <div class="flex flex-col justify-between">
             <div class="flex items-center gap-1.5 mb-2">
@@ -207,7 +280,7 @@ const envelopePath = computed(() => {
             </div>
 
             <!-- Perillas de control ADSR -->
-            <div class="flex gap-4 items-center">
+            <div class="flex gap-2 items-center">
               <Knob 
                 v-model="trackAttack"
                 :min="0.001"
@@ -216,6 +289,24 @@ const envelopePath = computed(() => {
                 :defaultValue="0.01"
                 label="Attack"
                 unit="s"
+              />
+              <Knob 
+                v-model="trackDecay"
+                :min="0.01"
+                :max="2.0"
+                :step="0.01"
+                :defaultValue="0.1"
+                label="Decay"
+                unit="s"
+              />
+              <Knob 
+                v-model="trackSustain"
+                :min="0.0"
+                :max="1.0"
+                :step="0.05"
+                :defaultValue="0.8"
+                label="Sustain"
+                unit=""
               />
               <Knob 
                 v-model="trackRelease"
@@ -254,12 +345,42 @@ const envelopePath = computed(() => {
                 />
                 
                 <!-- Nodos interactivos/visuales -->
-                <circle :cx="aWidth" cy="10" r="2.5" fill="#05d9e8" class="shadow-lg" />
-                <circle :cx="aWidth + 15" cy="31" r="2.5" fill="#05d9e8" />
-                <circle :cx="aWidth + 15 + 40" cy="31" r="2.5" fill="#05d9e8" />
-                <circle :cx="aWidth + 15 + 40 + rWidth" cy="80" r="2.5" fill="#05d9e8" />
+                <circle :cx="aw" cy="10" r="2.5" fill="#05d9e8" class="shadow-lg" />
+                <circle :cx="aw + dw" :cy="sh" r="2.5" fill="#05d9e8" />
+                <circle :cx="aw + dw + sw" :cy="sh" r="2.5" fill="#05d9e8" />
+                <circle :cx="aw + dw + sw + rw" cy="80" r="2.5" fill="#05d9e8" />
               </svg>
             </div>
+          </div>
+        </div>
+
+        <!-- PHYSICAL MODELING SECTION (guitar_pixel only) -->
+        <div v-if="selectedTrack.type === 'guitar_pixel'" class="flex-1 px-4 flex flex-col justify-between">
+          <div class="flex items-center gap-1.5 mb-2">
+            <PixelIcon name="music" class="w-3.5 h-3.5 text-neon-pink" />
+            <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">Physical Modeling</span>
+          </div>
+
+          <!-- Perillas de control Physical Modeling -->
+          <div class="flex gap-4 items-center flex-1 justify-center">
+            <Knob 
+              v-model="trackDampening"
+              :min="100"
+              :max="8000"
+              :step="100"
+              :defaultValue="4000"
+              label="Dampening"
+              unit="Hz"
+            />
+            <Knob 
+              v-model="trackResonance"
+              :min="0.0"
+              :max="0.99"
+              :step="0.01"
+              :defaultValue="0.95"
+              label="Resonance"
+              unit=""
+            />
           </div>
         </div>
 
