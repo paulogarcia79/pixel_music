@@ -23,7 +23,7 @@ CUANDO la acción `setTrackPhysicalModel` sea invocada en el store con parámetr
 ## 2. Interfaz de Usuario (Eurorack Device Panel)
 
 ### R5
-MIENTRAS el panel Eurorack esté abierto y haya una pista activa seleccionada, el sistema DEBE mostrar cuatro perillas (`Knob`) etiquetadas como Attack, Decay, Sustain y Release para modular los parámetros ADSR de la pista seleccionada.
+MIENTRAS el panel Eurorack esté abierto y haya una pista activa seleccionada que NO sea del tipo percusión, el sistema DEBE mostrar cuatro perillas (`Knob`) etiquetadas como Attack, Decay, Sustain y Release para modular los parámetros ADSR de la pista seleccionada.
 
 ### R6
 MIENTRAS el panel Eurorack esté abierto y la pista activa seleccionada sea del tipo de sintetizador de modelado físico `guitar_pixel`, el sistema DEBE mostrar controles interactivos adicionales de tipo perilla (`Knob`) para Dampening y Resonance.
@@ -32,7 +32,10 @@ MIENTRAS el panel Eurorack esté abierto y la pista activa seleccionada sea del 
 MIENTRAS la pista activa seleccionada NO sea del tipo de sintetizador de modelado físico `guitar_pixel`, el sistema NO DEBE mostrar los controles interactivos de Dampening y Resonance en el panel Eurorack.
 
 ### R8
-CUANDO el usuario modifique cualquiera de los parámetros de Attack, Decay, Sustain o Release a través de las perillas correspondientes, el sistema DEBE redibujar reactivamente la trayectoria visual del mini-visualizador SVG (`envelopePath`) en tiempo real utilizando los cuatro valores dinámicos reales actualizados.
+CUANDO el usuario modifique cualquiera de los parámetros de Attack, Decay, Sustain o Release a través de las perillas correspondientes en pistas no percusivas, el sistema DEBE redibujar reactivamente la trayectoria visual del mini-visualizador SVG (`envelopePath`) en tiempo real utilizando los cuatro valores dinámicos reales actualizados.
+
+### R13
+MIENTRAS la pista activa seleccionada sea del tipo de instrumento percusivo, el sistema NO DEBE mostrar las perillas ADSR ni la curva SVG de envolvente, y DEBE mostrar un bloque de mensaje explicativo que indique que la envolvente transitoria es gestionada automáticamente por el sintetizador.
 
 ---
 

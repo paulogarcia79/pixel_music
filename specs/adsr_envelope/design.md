@@ -114,6 +114,9 @@ Puntos de la envolvente SVG (`envelopePath`):
 
 Se ajustará la posición (`cx`, `cy`) de los cuatro círculos decorativos e interactivos en el SVG para coincidir exactamente con estos puntos de control dinámicos.
 
+### D. Sección de Percusión (Ocultamiento y Mensaje Informativo)
+Si el tipo de pista activa corresponde a un instrumento percusivo (`['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot']`), el panel ocultará por completo las perillas de control ADSR y la curva SVG. En su lugar, renderizará un contenedor oscuro informativo estilizado con el mensaje `"DRUM SYNTHESIS: TRANSIENT ENVELOPE IS AUTOMATIC"`, explicando que la síntesis percusiva de corta duración no requiere ni admite modulación ADSR prolongada.
+
 ---
 
 ## 5. Alternativa Descartada y Justificación

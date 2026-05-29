@@ -15,6 +15,7 @@
 - R10: [x] cubierto por `tests/audioEngine.spec.ts` -> `"R9, R10: setupLoop should dynamically apply ADSR and physical modeling parameters to track synths"`
 - R11: [x] cubierto por `tests/audioEngine.spec.ts` -> `"R11: playNote should apply ADSR envelope and physical modeling values to the preview synth"`
 - R12: [x] cubierto por `tests/audioEngine.spec.ts` -> `"R12: exportAudioOffline should apply ADSR and physical modeling parameters to the offline synths"`
+- R13: [x] cubierto por `tests/components/DevicePanel.spec.ts` -> `"R13: hides ADSR controls and SVG envelope shape when active track is percussion, displaying instead the transient envelope explanation"`
 
 ## Tasks completas
 - T1: [x] Incorporar decay, sustain, dampening y resonance en `TrackInstance` de `src/stores/sequencer.ts`.
@@ -32,6 +33,8 @@
 - T13: [x] Sincronizar ADSR e instrumento `guitar_pixel` en la exportación de audio `AudioEngine.exportAudioOffline`.
 - T14: [x] Escribir pruebas unitarias de integración del motor de audio en `tests/audioEngine.spec.ts`.
 - T15: [x] Ejecutar `./init.sh` verificando compilación de producción y éxito al 100% en la suite de tests.
+- T16: [x] Implementar en `DevicePanel.vue` el ocultamiento condicional de controles ADSR y curva SVG para pistas de tipo percusión, mostrando en su lugar el bloque informativo con el mensaje retro de modulación automática.
+- T17: [x] Actualizar las pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar que los controles ADSR y la curva SVG se ocultan correctamente cuando la pista activa seleccionada es de tipo percusión, y que se muestra el mensaje explicativo.
 
 ## Checkpoints
 - C1: [x] El arnés está completo (archivos base y `./init.sh` en verde).
@@ -42,4 +45,5 @@
 - C6: [x] Spec Driven Development (trazabilidad absoluta EARS y tareas completas).
 
 ## Cambios requeridos (si aplica)
-*Ninguno.* La implementación es impecable y de una calidad técnica sobresaliente.
+*Ninguno.* La implementación de T16 y T17 para la ocultación condicional de percusión cumple de forma sobresaliente con todos los requisitos y directrices del proyecto.
+
