@@ -277,4 +277,37 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     await AudioEngine.exportAudioOffline();
     expect(offlineSpy).toHaveBeenCalled();
   });
+
+  describe('Instruments Expansion (fat_square, retro_laser, retro_explosion)', () => {
+    it('should correctly instantiate and trigger fat_square using PolySynth with fatsquare oscillator', async () => {
+      const triggerSpy = vi.spyOn(Tone.PolySynth.prototype, 'triggerAttackRelease');
+      AudioEngine.playNote('C4', '16n', 'fat_square', 'Preview');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(triggerSpy).toHaveBeenCalled();
+    });
+
+    it('should correctly instantiate and trigger retro_laser using MembraneSynth with sawtooth oscillator', async () => {
+      const triggerSpy = vi.spyOn(Tone.MembraneSynth.prototype, 'triggerAttackRelease');
+      AudioEngine.playNote('C3', '16n', 'retro_laser', 'Preview');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      expect(triggerSpy).toHaveBeenCalled();
+    });
+
+    it('should correctly instantiate, trigger, and perform filter sweep for retro_explosion using ExplosionSynth', async () => {
+      const noiseTriggerSpy = vi.spyOn(Tone.NoiseSynth.prototype, 'triggerAttackRelease');
+
+      const filterFreqSpy = {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn()
+      };
+      vi.spyOn(Tone.Filter.prototype, 'frequency', 'get').mockReturnValue(filterFreqSpy as any);
+
+      AudioEngine.playNote('C2', '16n', 'retro_explosion', 'Preview');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(noiseTriggerSpy).toHaveBeenCalled();
+      expect(filterFreqSpy.setValueAtTime).toHaveBeenCalledWith(1000, expect.any(Number));
+      expect(filterFreqSpy.exponentialRampToValueAtTime).toHaveBeenCalledWith(100, expect.any(Number));
+    });
+  });
 });

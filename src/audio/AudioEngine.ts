@@ -30,7 +30,7 @@ class ExplosionSynth {
     return this;
   }
 
-  public set(options: any) {
+  public set(_options: any) {
     return this;
   }
 

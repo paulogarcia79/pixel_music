@@ -14,15 +14,31 @@ vi.mock('tone', () => {
   }
   return {
     Synth: class extends GenericMock {},
-    PolySynth: class extends GenericMock { set() { return this; } },
+    PolySynth: class extends GenericMock {
+      set() { return this; }
+      triggerAttackRelease() {}
+    },
     MonoSynth: class extends GenericMock {},
     PluckSynth: class extends GenericMock {},
     MetalSynth: class extends GenericMock {},
-    NoiseSynth: class extends GenericMock {},
-    MembraneSynth: class extends GenericMock {},
+    NoiseSynth: class extends GenericMock {
+      triggerAttackRelease() {}
+    },
+    MembraneSynth: class extends GenericMock {
+      triggerAttackRelease() {}
+    },
     FMSynth: class extends GenericMock {},
     Reverb: class extends GenericMock {},
     FeedbackDelay: class extends GenericMock {},
+    Filter: class extends GenericMock {
+      get frequency() {
+        return {
+          value: 0,
+          setValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn()
+        };
+      }
+    },
     Limiter: class extends GenericMock {},
     Compressor: class extends GenericMock {},
     Volume: class extends GenericMock {},
