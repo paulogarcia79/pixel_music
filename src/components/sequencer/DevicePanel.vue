@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useSequencerStore, type InstrumentType } from '../../stores/sequencer';
 import Knob from './Knob.vue';
 import PixelIcon from './PixelIcon.vue';
@@ -69,6 +69,28 @@ const INSTRUMENTS: InstrumentDefinition[] = [
   { type: 'flute_pixel', name: 'Blowing Flute', icon: 'music', category: 'KEY' },
   { type: 'retro_brass', name: 'Retro Brass', icon: 'music', category: 'KEY' }
 ];
+
+// T3: Estado reactivo local para la pestaña de categoría activa
+const activeTab = ref<InstrumentCategory>('WAV');
+
+// T4: Pistas filtradas por la pestaña activa
+const filteredInstruments = computed(() => {
+  return INSTRUMENTS.filter(inst => inst.category === activeTab.value);
+});
+
+// T5: Auto-foco reactivo bidireccional (watch de pista activa -> pestaña de categoría)
+watch(
+  () => selectedTrack.value?.type,
+  (newType) => {
+    if (newType) {
+      const matchedInstrument = INSTRUMENTS.find(inst => inst.type === newType);
+      if (matchedInstrument) {
+        activeTab.value = matchedInstrument.category;
+      }
+    }
+  },
+  { immediate: true }
+);
 
 // Propiedades computadas reactivas bidireccionales vinculadas al store
 const trackType = computed({
