@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useSequencerStore } from '../src/stores/sequencer';
-import { AudioEngine } from '../src/audio/AudioEngine';
+import { AudioEngine, PolyPluckSynth } from '../src/audio/AudioEngine';
 import * as Tone from 'tone';
 
 describe('AudioEngine (ADSR and Physical Modeling)', () => {
@@ -9,6 +9,7 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     setActivePinia(createPinia());
     vi.restoreAllMocks();
     AudioEngine.clearAllSynths();
+    AudioEngine['initialized'] = false;
   });
 
   it('R9, R10: setupLoop should dynamically apply ADSR and physical modeling parameters to track synths', async () => {
@@ -38,8 +39,8 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     expect(scheduleRepeatSpy).toHaveBeenCalled();
     const tickCallback = scheduleRepeatSpy.mock.calls[0][0];
 
-    // Spy on Tone.PolySynth.prototype.set
-    const setSpy = vi.spyOn(Tone.PolySynth.prototype, 'set');
+    // Spy on PolyPluckSynth.prototype.set
+    const setSpy = vi.spyOn(PolyPluckSynth.prototype, 'set');
 
     // Execute tick callback for step 1
     // We mock globalStep logic or isSongMode
@@ -80,7 +81,7 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     track.dampening = 3500;
     track.resonance = 0.91;
 
-    const setSpy = vi.spyOn(Tone.PolySynth.prototype, 'set');
+    const setSpy = vi.spyOn(PolyPluckSynth.prototype, 'set');
 
     // Trigger playNote
     AudioEngine.playNote('C4', '16n', 'guitar_pixel', 'Track 1');
@@ -126,7 +127,7 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
         destination: {}
       };
       
-      const setSpy = vi.spyOn(Tone.PolySynth.prototype, 'set');
+      const setSpy = vi.spyOn(PolyPluckSynth.prototype, 'set');
       
       await callback(mockContext);
 
@@ -160,5 +161,36 @@ describe('AudioEngine (ADSR and Physical Modeling)', () => {
     await AudioEngine.exportAudioOffline();
 
     expect(offlineSpy).toHaveBeenCalled();
+  });
+
+  it('should play guitar_pixel notes polyphonically using PolyPluckSynth without errors', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'guitar_pixel';
+    track.notes[1] = ['C4', 'E4', 'G4']; // Chord!
+
+    // Clear previous mock calls since Tone.Transport.scheduleRepeat is a persistent mock
+    (Tone.Transport.scheduleRepeat as any).mockClear();
+    const scheduleRepeatSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
+    
+    // Initialize to trigger setupLoop
+    await AudioEngine.initialize();
+    
+    expect(scheduleRepeatSpy).toHaveBeenCalled();
+    const tickCallback = scheduleRepeatSpy.mock.calls[0][0];
+
+    const triggerAttackReleaseSpy = vi.spyOn(PolyPluckSynth.prototype, 'triggerAttackRelease');
+
+    store.currentStep = 1;
+    store.isSongMode = false;
+    
+    // Execute callback with time = 0
+    tickCallback(0);
+
+    // Verify triggerAttackRelease was called with the chord notes
+    expect(triggerAttackReleaseSpy).toHaveBeenCalledWith(['C4', 'E4', 'G4'], '16n', 0);
   });
 });
