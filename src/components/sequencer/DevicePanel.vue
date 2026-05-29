@@ -297,19 +297,37 @@ const isPercussion = computed(() => {
             <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">1. Oscillator Section</span>
           </div>
 
-          <div class="flex flex-col gap-1.5 overflow-y-auto max-h-28 pr-1 custom-scrollbar">
+          <!-- T6: Barra de pestañas (WAV, SYN, DRM, KEY) -->
+          <div class="flex border-b border-gray-800/80 mb-2 gap-1">
             <button
-              v-for="inst in INSTRUMENTS"
+              v-for="tab in (['WAV', 'SYN', 'DRM', 'KEY'] as const)"
+              :key="tab"
+              @click="activeTab = tab"
+              class="flex-1 py-1 font-mono text-[9px] font-bold tracking-wider uppercase border-t border-x rounded-t transition-all cursor-pointer text-center"
+              :class="[
+                activeTab === tab 
+                  ? 'bg-[#181822] border-neon-cyan/50 text-neon-cyan shadow-[0_-2px_6px_rgba(5,217,232,0.1)]' 
+                  : 'bg-black/20 border-transparent text-gray-500 hover:text-gray-300 hover:bg-black/40'
+              ]"
+            >
+              {{ tab }}
+            </button>
+          </div>
+
+          <!-- T7, T8, T9: Rejilla compacta de dos columnas con botones de 24px -->
+          <div class="grid grid-cols-2 gap-1 overflow-y-auto max-h-[104px] pr-1 custom-scrollbar">
+            <button
+              v-for="inst in filteredInstruments"
               :key="inst.type"
-              class="flex items-center gap-2 px-2 py-1 bg-black/40 border text-left font-mono text-[9px] rounded uppercase transition-all duration-150 active:scale-95 cursor-pointer"
+              class="flex items-center gap-1.5 px-1.5 h-6 bg-black/40 border text-left font-mono text-[8px] rounded uppercase transition-all duration-150 active:scale-95 cursor-pointer min-w-0"
               :class="[
                 trackType === inst.type 
                   ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_8px_rgba(5,217,232,0.15)] font-bold' 
-                  : 'border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-300'
+                  : 'border-gray-800/60 text-gray-400 hover:border-gray-700 hover:text-gray-300'
               ]"
               @click="trackType = inst.type"
             >
-              <PixelIcon :name="inst.icon" class="w-3 h-3 flex-shrink-0" />
+              <PixelIcon :name="inst.icon" class="w-2.5 h-2.5 flex-shrink-0" />
               <span class="truncate">{{ inst.name }}</span>
             </button>
           </div>
