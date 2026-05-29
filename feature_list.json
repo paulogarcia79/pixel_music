@@ -43,7 +43,7 @@
       "name": "instrument_selector_improvement",
       "description": "Rediseño de la interfaz de selección de instrumentos en el Device Panel de Eurorack implementando pestañas de categoría (WAV, SYN, DRM, KEY) y una rejilla compacta de dos columnas con auto-foco reactivo bidireccional y catálogo ampliado de 30 instrumentos.",
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     }
   ]
 }
