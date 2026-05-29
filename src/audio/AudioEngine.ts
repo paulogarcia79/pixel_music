@@ -389,8 +389,8 @@ export class AudioEngine {
             nodes.delay.wet.setValueAtTime(track.delayWet, time);
 
             const type = track.type;
-            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-              if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+              if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
                 const noteToPlay = (notes && notes.length > 0 && notes[0]) ? notes[0] : (type === 'kick' ? 'C2' : 'C3');
                 nodes.synth.triggerAttackRelease(noteToPlay, '16n', time);
               } else {
@@ -453,8 +453,8 @@ export class AudioEngine {
         }
       }
       
-      if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-        if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+      if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+        if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
           s.triggerAttackRelease(note || 'C2', duration);
         } else {
           s.triggerAttackRelease(duration);
@@ -561,8 +561,8 @@ export class AudioEngine {
         n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
         
         const type = d.track.type;
-        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-          if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+          if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
             const rawNote = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : null;
             const noteToPlay = rawNote || (type === 'kick' ? 'C2' : 'C3');
             n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);
