@@ -14,7 +14,7 @@ export type InstrumentType =
 
 export interface TrackInstance {
   name: string;
-  notes: Record<number, string>; // step -> note
+  notes: Record<number, string[]>; // step -> array of notes
   type: InstrumentType;
   volume: number;
   reverbWet: number;
@@ -54,7 +54,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
     tracks: [
       {
         name: 'Kick',
-        notes: { 1: 'C2', 5: 'C2', 9: 'C2', 13: 'C2', 17: 'C2', 21: 'C2', 25: 'C2', 29: 'C2' },
+        notes: { 1: ['C2'], 5: ['C2'], 9: ['C2'], 13: ['C2'], 17: ['C2'], 21: ['C2'], 25: ['C2'], 29: ['C2'] },
         type: 'kick',
         volume: -8,
         reverbWet: 0.1,
@@ -65,7 +65,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Hihat',
-        notes: { 3: 'C4', 7: 'C4', 11: 'C4', 15: 'C4', 19: 'C4', 23: 'C4', 27: 'C4', 31: 'C4' },
+        notes: { 3: ['C4'], 7: ['C4'], 11: ['C4'], 15: ['C4'], 19: ['C4'], 23: ['C4'], 27: ['C4'], 31: ['C4'] },
         type: 'hihat',
         volume: -12,
         reverbWet: 0.2,
@@ -76,7 +76,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Bass',
-        notes: { 1: 'C3', 4: 'Eb3', 7: 'G3', 10: 'Bb3', 13: 'C3', 16: 'Eb3', 19: 'G3', 22: 'Bb3', 25: 'C3', 28: 'Eb3', 31: 'G3' },
+        notes: { 1: ['C3'], 4: ['Eb3'], 7: ['G3'], 10: ['Bb3'], 13: ['C3'], 16: ['Eb3'], 19: ['G3'], 22: ['Bb3'], 25: ['C3'], 28: ['Eb3'], 31: ['G3'] },
         type: 'acid_synth',
         volume: -10,
         reverbWet: 0.1,
@@ -87,7 +87,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Lead',
-        notes: { 5: 'C4', 9: 'G4', 13: 'C5', 21: 'Bb4', 25: 'G4' },
+        notes: { 5: ['C4'], 9: ['G4'], 13: ['C5'], 21: ['Bb4'], 25: ['G4'] },
         type: 'square',
         volume: -10,
         reverbWet: 0.3,
@@ -104,7 +104,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
     tracks: [
       {
         name: 'Kick',
-        notes: { 1: 'C2', 9: 'C2', 17: 'C2', 25: 'C2' },
+        notes: { 1: ['C2'], 9: ['C2'], 17: ['C2'], 25: ['C2'] },
         type: 'kick',
         volume: -8,
         reverbWet: 0.1,
@@ -115,7 +115,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Snare',
-        notes: { 5: 'C4', 13: 'C4', 21: 'C4', 29: 'C4' },
+        notes: { 5: ['C4'], 13: ['C4'], 21: ['C4'], 29: ['C4'] },
         type: 'snare',
         volume: -10,
         reverbWet: 0.3,
@@ -126,7 +126,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Bass',
-        notes: { 1: 'C3', 3: 'C3', 5: 'C3', 7: 'C3', 9: 'C3', 11: 'C3', 13: 'C3', 15: 'C3', 17: 'C3', 19: 'C3', 21: 'C3', 23: 'C3', 25: 'C3', 27: 'C3', 29: 'C3', 31: 'C3' },
+        notes: { 1: ['C3'], 3: ['C3'], 5: ['C3'], 7: ['C3'], 9: ['C3'], 11: ['C3'], 13: ['C3'], 15: ['C3'], 17: ['C3'], 19: ['C3'], 21: ['C3'], 23: ['C3'], 25: ['C3'], 27: ['C3'], 29: ['C3'], 31: ['C3'] },
         type: 'bass_synth',
         volume: -8,
         reverbWet: 0.1,
@@ -137,7 +137,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Pad',
-        notes: { 1: 'C4', 17: 'G4' },
+        notes: { 1: ['C4'], 17: ['G4'] },
         type: 'pad',
         volume: -12,
         reverbWet: 0.5,
@@ -154,7 +154,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
     tracks: [
       {
         name: 'Drums',
-        notes: { 1: 'C4', 5: 'C4', 9: 'C4', 13: 'C4', 17: 'C4', 21: 'C4', 25: 'C4', 29: 'C4' },
+        notes: { 1: ['C4'], 5: ['C4'], 9: ['C4'], 13: ['C4'], 17: ['C4'], 21: ['C4'], 25: ['C4'], 29: ['C4'] },
         type: 'noise',
         volume: -10,
         reverbWet: 0.1,
@@ -165,7 +165,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Bass',
-        notes: { 1: 'C3', 5: 'Eb3', 9: 'F3', 13: 'G3', 17: 'C3', 21: 'Eb3', 25: 'F3', 29: 'Bb3' },
+        notes: { 1: ['C3'], 5: ['Eb3'], 9: ['F3'], 13: ['G3'], 17: ['C3'], 21: ['Eb3'], 25: ['F3'], 29: ['Bb3'] },
         type: 'sub_bass',
         volume: -6,
         reverbWet: 0.0,
@@ -176,7 +176,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Guitar',
-        notes: { 1: 'C4', 3: 'Eb4', 5: 'F4', 7: 'G4', 9: 'C4', 11: 'Eb4', 13: 'F4', 15: 'G4' },
+        notes: { 1: ['C4'], 3: ['Eb4'], 5: ['F4'], 7: ['G4'], 9: ['C4'], 11: ['Eb4'], 13: ['F4'], 15: ['G4'] },
         type: 'guitar_dist',
         volume: -12,
         reverbWet: 0.2,
@@ -193,7 +193,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
     tracks: [
       {
         name: 'Pluck',
-        notes: { 1: 'C4', 5: 'G4', 9: 'C5', 13: 'D5', 17: 'G4', 21: 'C5', 25: 'D5', 29: 'G5' },
+        notes: { 1: ['C4'], 5: ['G4'], 9: ['C5'], 13: ['D5'], 17: ['G4'], 21: ['C5'], 25: ['D5'], 29: ['G5'] },
         type: 'fm_pluck',
         volume: -12,
         reverbWet: 0.6,
@@ -204,7 +204,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Bell',
-        notes: { 3: 'E5', 11: 'G5', 19: 'C6', 27: 'B5' },
+        notes: { 3: ['E5'], 11: ['G5'], 19: ['C6'], 27: ['B5'] },
         type: 'fm_bell',
         volume: -14,
         reverbWet: 0.7,
@@ -215,7 +215,7 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
       },
       {
         name: 'Slow Pad',
-        notes: { 1: 'C3', 17: 'F3' },
+        notes: { 1: ['C3'], 17: ['F3'] },
         type: 'pad',
         volume: -12,
         reverbWet: 0.8,
@@ -368,13 +368,29 @@ export const useSequencerStore = defineStore('sequencer', {
     },
     addNote(trackName: string, step: number, note: string) {
       const track = this.getTrackInPattern(trackName);
-      if (track) track.notes[step] = note;
+      if (track) {
+        if (!track.notes[step]) {
+          track.notes[step] = [];
+        }
+        if (!track.notes[step].includes(note)) {
+          track.notes[step].push(note);
+        }
+      }
     },
-    removeNote(trackName: string, step: number) {
+    removeNote(trackName: string, step: number, note?: string) {
       const track = this.getTrackInPattern(trackName);
-      if (track) delete track.notes[step];
+      if (track) {
+        if (note !== undefined && track.notes[step]) {
+          track.notes[step] = track.notes[step].filter(n => n !== note);
+          if (track.notes[step].length === 0) {
+            delete track.notes[step];
+          }
+        } else {
+          delete track.notes[step];
+        }
+      }
     },
-    getNoteAt(trackName: string, step: number, patternId?: number): string | undefined {
+    getNoteAt(trackName: string, step: number, patternId?: number): string[] | undefined {
       const track = this.getTrackInPattern(trackName, patternId);
       return track?.notes[step];
     },
@@ -396,6 +412,15 @@ export const useSequencerStore = defineStore('sequencer', {
           p.tracks.forEach(t => {
             if (t.attack === undefined) t.attack = 0.01;
             if (t.release === undefined) t.release = 0.5;
+            if (t.notes) {
+              Object.keys(t.notes).forEach(stepKey => {
+                const step = parseInt(stepKey);
+                const val = t.notes[step];
+                if (typeof val === 'string') {
+                  t.notes[step] = [val];
+                }
+              });
+            }
           });
         });
       }
@@ -483,6 +508,17 @@ export const useSequencerStore = defineStore('sequencer', {
       const currentPattern = this.patterns[this.currentPatternId];
       if (currentPattern) {
         currentPattern.tracks = JSON.parse(JSON.stringify(preset.tracks));
+        currentPattern.tracks.forEach(t => {
+          if (t.notes) {
+            Object.keys(t.notes).forEach(stepKey => {
+              const step = parseInt(stepKey);
+              const val = t.notes[step];
+              if (typeof val === 'string') {
+                t.notes[step] = [val];
+              }
+            });
+          }
+        });
       }
 
       // 3. Modificar BPM
