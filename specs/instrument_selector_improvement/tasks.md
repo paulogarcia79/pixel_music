@@ -32,4 +32,4 @@ Este documento enumera los pasos concretos e incrementales para implementar la f
     *   Verificar el auto-foco reactivo bidireccional: al cambiar el tipo de instrumento de la pista a percusión (ej. `kick`) o teclado (ej. `piano_pixel`), la pestaña activa cambia automáticamente a `DRM` o `KEY` respectively.
     *   Verificar que al hacer clic en un botón de instrumento se actualice la propiedad del store del secuenciador correspondientemente.
     Cubre: R1-R10.
-- [ ] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde. Cubre: R1-R10.
+- [x] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde. Cubre: R1-R10.

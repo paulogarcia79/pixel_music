@@ -14,4 +14,4 @@
 - [x] T8 — Configurar cada botón de instrumento de la rejilla con una altura física fija y compacta de exactamente `24px` (`h-6`) y asegurar que el click llame a la propiedad de actualización `trackType`.
 - [x] T9 — Aplicar clases condicionales a los botones de instrumento en la rejilla para destacar visualmente el instrumento activo de la pista seleccionada (borde neón y fondo translúcido).
 - [x] T10 — Actualizar y ampliar la suite de pruebas unitarias de componentes en `tests/components/DevicePanel.spec.ts` para verificar la cobertura completa de los nuevos requerimientos.
-- [ ] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde.
+- [x] T11 — Ejecutar la inicialización y suite de pruebas del proyecto (`./init.sh`) verificando que compile sin errores y que todas las pruebas (las existentes y las nuevas) pasen exitosamente al 100% en color verde.
