@@ -8,12 +8,25 @@ Feature: Sequencer State Management
     When I add a note "C4" at step 1 in "Track 1"
     Then "Track 1" should have a note "C4" at step 1
 
-  Scenario: Monophonic restriction in a track
+  Scenario: Polyphonic support in a track
     Given a new sequencer state
     And there is a note "C4" at step 1 in "Track 1"
     When I add a note "E4" at step 1 in "Track 1"
-    Then "Track 1" should only have the note "E4" at step 1
-    And "Track 1" should not have the note "C4" at step 1
+    Then "Track 1" should have a note "E4" at step 1
+    And "Track 1" should have a note "C4" at step 1
+
+  Scenario: Removing a specific note in a step
+    Given a new sequencer state
+    And there is a note "C4" at step 1 in "Track 1"
+    And there is a note "E4" at step 1 in "Track 1"
+    When I remove note "C4" at step 1 from "Track 1"
+    Then "Track 1" should have a note "E4" at step 1
+    And "Track 1" should not have a note "C4" at step 1
+
+  Scenario: Normalizing monophonic projects for backwards compatibility
+    Given a project with monophonic note "G4" at step 5 in "Track 1"
+    When I load the project
+    Then "Track 1" should have a note "G4" at step 5
 
   Scenario: Updating current step
     Given a new sequencer state
