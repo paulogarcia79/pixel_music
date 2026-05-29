@@ -253,13 +253,23 @@ export class AudioEngine {
             
             if (nodes.synth.envelope) {
               nodes.synth.envelope.attack = track.attack;
+              nodes.synth.envelope.decay = track.decay;
+              nodes.synth.envelope.sustain = track.sustain;
               nodes.synth.envelope.release = track.release;
             } else if (nodes.synth.set) {
               nodes.synth.set({
                 envelope: {
                   attack: track.attack,
+                  decay: track.decay,
+                  sustain: track.sustain,
                   release: track.release
                 }
+              });
+            }
+            if (track.type === 'guitar_pixel') {
+              nodes.synth.set({
+                dampening: track.dampening,
+                resonance: track.resonance
               });
             }
             
@@ -306,13 +316,23 @@ export class AudioEngine {
       if (track) {
         if (s.envelope) {
           s.envelope.attack = track.attack;
+          s.envelope.decay = track.decay;
+          s.envelope.sustain = track.sustain;
           s.envelope.release = track.release;
         } else if (s.set) {
           s.set({
             envelope: {
               attack: track.attack,
+              decay: track.decay,
+              sustain: track.sustain,
               release: track.release
             }
+          });
+        }
+        if (track.type === 'guitar_pixel') {
+          s.set({
+            dampening: track.dampening,
+            resonance: track.resonance
           });
         }
       }
@@ -397,13 +417,23 @@ export class AudioEngine {
         const n = synths.get(key);
         if (n.synth.envelope) {
           n.synth.envelope.attack = d.track.attack;
+          n.synth.envelope.decay = d.track.decay;
+          n.synth.envelope.sustain = d.track.sustain;
           n.synth.envelope.release = d.track.release;
         } else if (n.synth.set) {
           n.synth.set({
             envelope: {
               attack: d.track.attack,
+              decay: d.track.decay,
+              sustain: d.track.sustain,
               release: d.track.release
             }
+          });
+        }
+        if (d.track.type === 'guitar_pixel') {
+          n.synth.set({
+            dampening: d.track.dampening,
+            resonance: d.track.resonance
           });
         }
         n.synth.volume.setValueAtTime(d.track.volume - 6, d.t);

@@ -35,10 +35,18 @@ vi.mock('tone', () => {
     now: vi.fn(() => 0),
     getContext: vi.fn(() => ({})),
     setContext: vi.fn(),
+    Offline: vi.fn().mockImplementation(async (callback) => {
+      class MockContext {
+        destination = {};
+      }
+      return callback(new MockContext());
+    }),
+    Gain: class extends GenericMock {},
     Transport: {
       scheduleRepeat: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
+      getSecondsAtTime: vi.fn(() => 0),
       seconds: 0,
       state: 'stopped',
       bpm: { value: 120 }
