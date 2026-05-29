@@ -10,7 +10,8 @@ export type InstrumentType =
   | 'guitar_pixel' | 'guitar_dist' 
   | 'piano_pixel' | 'electric_piano' | 'honky_tonk'
   | 'flute_pixel' | 'clarinet_pixel' | 'retro_oboe'
-  | 'acid_synth' | 'retro_brass' | 'ghost_synth' | 'sub_bass' | 'super_saw';
+  | 'acid_synth' | 'retro_brass' | 'ghost_synth' | 'sub_bass' | 'super_saw'
+  | 'fat_square' | 'retro_laser' | 'retro_explosion';
 
 export interface TrackInstance {
   name: string;
