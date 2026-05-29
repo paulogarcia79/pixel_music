@@ -407,7 +407,11 @@ export class AudioEngine {
       }
       
       if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-        s.triggerAttackRelease(duration);
+        if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+          s.triggerAttackRelease(note || 'C2', duration);
+        } else {
+          s.triggerAttackRelease(duration);
+        }
       } else {
         s.triggerAttackRelease(note, duration);
       }
