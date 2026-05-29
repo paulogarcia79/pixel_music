@@ -73,7 +73,7 @@ const INSTRUMENTS: InstrumentDefinition[] = [
 // T3: Estado reactivo local para la pestaña de categoría activa
 const activeTab = ref<InstrumentCategory>('WAV');
 
-// T4: Pistas filtradas por la pestaña activa
+// T4: Pistas filtradas rigurosamente por la pestaña activa
 const filteredInstruments = computed(() => {
   return INSTRUMENTS.filter(inst => inst.category === activeTab.value);
 });
