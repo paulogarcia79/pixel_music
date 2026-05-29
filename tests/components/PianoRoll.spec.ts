@@ -56,6 +56,7 @@ vi.mock('tone', () => {
 
 import { useSequencerStore } from '../../src/stores/sequencer';
 import PianoRoll from '../../src/components/sequencer/PianoRoll.vue';
+import { AudioEngine } from '../../src/audio/AudioEngine';
 
 describe('PianoRoll.vue', () => {
   beforeEach(() => {
@@ -148,6 +149,120 @@ describe('PianoRoll.vue', () => {
 
     // Debería desaparecer
     expect(cell.textContent).not.toContain('B5');
+
+    app.unmount();
+    container.remove();
+  });
+
+  it('R13: Clicking an empty cell adds the note to the active track step and plays preview', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp(PianoRoll);
+    app.mount(container);
+    await nextTick();
+
+    const store = useSequencerStore();
+    store.$reset();
+    store.selectedTrackName = 'Track 1';
+    store.ensureTrackExists('Track 1');
+
+    // Spy on AudioEngine.playNote
+    const playNoteSpy = vi.spyOn(AudioEngine, 'playNote');
+
+    // B5 is at index 0 of visibleNotes
+    // Let's click step 3 of B5 (index 2 in cells)
+    const cells = container.querySelectorAll('.grid > div.cursor-pointer');
+    const cell = cells[2] as HTMLElement; 
+    expect(cell).not.toBeUndefined();
+
+    // Verify it is not active initially
+    expect(store.getNoteAt('Track 1', 3)).toBeUndefined();
+
+    // Click to add note
+    cell.click();
+    await nextTick();
+
+    // Should be added in the store as step notes array
+    expect(store.getNoteAt('Track 1', 3)).toEqual(['B5']);
+    
+    // Should trigger preview playing only B5
+    expect(playNoteSpy).toHaveBeenCalledWith('B5', '16n', 'square', 'Track 1');
+
+    playNoteSpy.mockRestore();
+    app.unmount();
+    container.remove();
+  });
+
+  it('R14 & R15: Clicking an active cell removes only that individual note, and isNoteActive checks inclusion', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp(PianoRoll);
+    app.mount(container);
+    await nextTick();
+
+    const store = useSequencerStore();
+    store.$reset();
+    store.selectedTrackName = 'Track 1';
+    store.ensureTrackExists('Track 1');
+
+    // Add multiple notes manually to step 5 to create a chord
+    store.addNote('Track 1', 5, 'B5');
+    store.addNote('Track 1', 5, 'A5');
+    await nextTick();
+
+    expect(store.getNoteAt('Track 1', 5)).toEqual(['B5', 'A5']);
+
+    // Find the cell for step 5 of note B5 (B5 is index 0 of visibleNotes, so cell is cells[4])
+    const cells = container.querySelectorAll('.grid > div.cursor-pointer');
+    const cellB5 = cells[4] as HTMLElement;
+    expect(cellB5).not.toBeUndefined();
+
+    // R15: Verify the cell reflects it is active (class bg-neon-pink)
+    expect(cellB5.className).toContain('bg-neon-pink');
+
+    // Click B5 cell to toggle it off (should remove only B5, leaving A5 active)
+    cellB5.click();
+    await nextTick();
+
+    // Verify only B5 is removed
+    expect(store.getNoteAt('Track 1', 5)).toEqual(['A5']);
+    expect(cellB5.className).not.toContain('bg-neon-pink');
+
+    app.unmount();
+    container.remove();
+  });
+
+  it('R16: getGhostNotes correctly returns tracks that have the note programmed in that step', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp(PianoRoll);
+    app.mount(container);
+    await nextTick();
+
+    const store = useSequencerStore();
+    store.$reset();
+    
+    // Create 'Track 1' as active, and 'Track 2' as another track in the store
+    store.selectedTrackName = 'Track 1';
+    store.ensureTrackExists('Track 1');
+    store.addTrack('Track 2', 'triangle');
+    await nextTick();
+
+    // Put B5 on Track 2 step 7
+    store.addNote('Track 2', 7, 'B5');
+    await nextTick();
+
+    // Verify step 7 B5 cell (cells[6]) renders ghost note overlay
+    const cells = container.querySelectorAll('.grid > div.cursor-pointer');
+    const cellStep7 = cells[6] as HTMLElement;
+    expect(cellStep7).not.toBeUndefined();
+
+    // The ghost note overlay element (class border-neon-cyan/35) should be present inside the cell
+    const ghostNoteOverlay = cellStep7.querySelector('.border-neon-cyan\\/35');
+    expect(ghostNoteOverlay).not.toBeNull();
 
     app.unmount();
     container.remove();
