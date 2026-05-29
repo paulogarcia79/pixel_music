@@ -22,6 +22,10 @@ export interface TrackInstance {
   muted: boolean;
   attack: number;
   release: number;
+  decay: number;
+  sustain: number;
+  dampening: number;
+  resonance: number;
 }
 
 export interface Pattern {
@@ -61,7 +65,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.0,
         muted: false,
         attack: 0.01,
-        release: 0.4
+        release: 0.4,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Hihat',
@@ -72,7 +80,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.1,
         muted: false,
         attack: 0.01,
-        release: 0.05
+        release: 0.05,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Bass',
@@ -83,7 +95,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.2,
         muted: false,
         attack: 0.01,
-        release: 0.2
+        release: 0.2,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Lead',
@@ -94,7 +110,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.3,
         muted: false,
         attack: 0.02,
-        release: 0.4
+        release: 0.4,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       }
     ]
   },
@@ -111,7 +131,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.0,
         muted: false,
         attack: 0.01,
-        release: 0.4
+        release: 0.4,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Snare',
@@ -122,7 +146,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.0,
         muted: false,
         attack: 0.01,
-        release: 0.1
+        release: 0.1,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Bass',
@@ -133,7 +161,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.1,
         muted: false,
         attack: 0.01,
-        release: 0.3
+        release: 0.3,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Pad',
@@ -144,7 +176,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.4,
         muted: false,
         attack: 0.4,
-        release: 1.2
+        release: 1.2,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       }
     ]
   },
@@ -161,7 +197,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.0,
         muted: false,
         attack: 0.01,
-        release: 0.05
+        release: 0.05,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Bass',
@@ -172,7 +212,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.0,
         muted: false,
         attack: 0.01,
-        release: 0.2
+        release: 0.2,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Guitar',
@@ -183,7 +227,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.2,
         muted: false,
         attack: 0.02,
-        release: 0.4
+        release: 0.4,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       }
     ]
   },
@@ -200,7 +248,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.5,
         muted: false,
         attack: 0.1,
-        release: 0.8
+        release: 0.8,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Bell',
@@ -211,7 +263,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.6,
         muted: false,
         attack: 0.05,
-        release: 1.5
+        release: 1.5,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       },
       {
         name: 'Slow Pad',
@@ -222,7 +278,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.4,
         muted: false,
         attack: 0.8,
-        release: 2.0
+        release: 2.0,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       }
     ]
   },
@@ -239,7 +299,11 @@ export const PATTERN_PRESETS: Record<string, PresetDefinition> = {
         delayWet: 0.1,
         muted: false,
         attack: 0.01,
-        release: 0.5
+        release: 0.5,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       }
     ]
   }
@@ -260,7 +324,11 @@ export const useSequencerStore = defineStore('sequencer', {
             delayWet: 0.1,
             muted: false,
             attack: 0.01,
-            release: 0.5
+            release: 0.5,
+            decay: 0.1,
+            sustain: 0.8,
+            dampening: 4000,
+            resonance: 0.95
           }
         ]
       }
@@ -298,7 +366,11 @@ export const useSequencerStore = defineStore('sequencer', {
         delayWet: 0.1,
         muted: false,
         attack: 0.01,
-        release: 0.5
+        release: 0.5,
+        decay: 0.1,
+        sustain: 0.8,
+        dampening: 4000,
+        resonance: 0.95
       };
     },
     addTrack(name: string, type: InstrumentType = 'square') {
@@ -343,11 +415,20 @@ export const useSequencerStore = defineStore('sequencer', {
       const track = this.getTrackInPattern(trackName);
       if (track) track.type = type;
     },
-    setTrackADSR(trackName: string, attack: number, release: number) {
+    setTrackADSR(trackName: string, attack: number, decay: number, sustain: number, release: number) {
       const track = this.getTrackInPattern(trackName);
       if (track) {
         track.attack = attack;
+        track.decay = decay;
+        track.sustain = sustain;
         track.release = release;
+      }
+    },
+    setTrackPhysicalModel(trackName: string, dampening: number, resonance: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) {
+        track.dampening = dampening;
+        track.resonance = resonance;
       }
     },
     setTrackReverb(trackName: string, value: number) {
@@ -412,6 +493,10 @@ export const useSequencerStore = defineStore('sequencer', {
           p.tracks.forEach(t => {
             if (t.attack === undefined) t.attack = 0.01;
             if (t.release === undefined) t.release = 0.5;
+            if (t.decay === undefined) t.decay = 0.1;
+            if (t.sustain === undefined) t.sustain = 0.8;
+            if (t.dampening === undefined) t.dampening = 4000;
+            if (t.resonance === undefined) t.resonance = 0.95;
             if (t.notes) {
               Object.keys(t.notes).forEach(stepKey => {
                 const step = parseInt(stepKey);
@@ -509,6 +594,12 @@ export const useSequencerStore = defineStore('sequencer', {
       if (currentPattern) {
         currentPattern.tracks = JSON.parse(JSON.stringify(preset.tracks));
         currentPattern.tracks.forEach(t => {
+          if (t.attack === undefined) t.attack = 0.01;
+          if (t.release === undefined) t.release = 0.5;
+          if (t.decay === undefined) t.decay = 0.1;
+          if (t.sustain === undefined) t.sustain = 0.8;
+          if (t.dampening === undefined) t.dampening = 4000;
+          if (t.resonance === undefined) t.resonance = 0.95;
           if (t.notes) {
             Object.keys(t.notes).forEach(stepKey => {
               const step = parseInt(stepKey);

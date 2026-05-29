@@ -100,6 +100,26 @@ describe('Pattern Presets', () => {
       expect(pattern.tracks[0].type).toBe('square');
       expect(Object.keys(pattern.tracks[0].notes).length).toBe(0);
     });
+
+    it('ADSR R1, R2, R3, R4: should initialize, default, setTrackADSR, and setTrackPhysicalModel properties', () => {
+      const store = useSequencerStore();
+      
+      const track = store.currentTracks[0];
+      expect(track.decay).toBe(0.1);
+      expect(track.sustain).toBe(0.8);
+      expect(track.dampening).toBe(4000);
+      expect(track.resonance).toBe(0.95);
+
+      store.setTrackADSR('Track 1', 0.2, 0.3, 0.7, 0.9);
+      expect(track.attack).toBe(0.2);
+      expect(track.decay).toBe(0.3);
+      expect(track.sustain).toBe(0.7);
+      expect(track.release).toBe(0.9);
+
+      store.setTrackPhysicalModel('Track 1', 3000, 0.85);
+      expect(track.dampening).toBe(3000);
+      expect(track.resonance).toBe(0.85);
+    });
   });
 
   describe('UI Component Integration - Transport.vue (R2, R3, R4, R5, R6, R7)', () => {

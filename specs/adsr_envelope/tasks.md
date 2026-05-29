@@ -6,12 +6,12 @@ Este documento enumera los pasos concretos e incrementales para implementar la f
 
 ## Fase 1: Store y Normalización de Datos
 
-- [ ] T1 — Extender la interfaz `TrackInstance` en `src/stores/sequencer.ts` para incorporar las propiedades `decay`, `sustain`, `dampening` y `resonance`. Cubre: R1.
-- [ ] T2 — Actualizar la función de inicialización de pistas `createDefaultTrack` en `src/stores/sequencer.ts` para proveer los valores por defecto de la envolvente y el modelado físico. Cubre: R2.
-- [ ] T3 — Actualizar la colección estática de `PATTERN_PRESETS` en `src/stores/sequencer.ts` asignando valores coherentes de `decay`, `sustain`, `dampening` y `resonance` a cada una de las pistas predefinidas de todos los géneros. Cubre: R2.
-- [ ] T4 — Modificar las acciones de carga `loadProject` y `loadPreset` en `src/stores/sequencer.ts` agregando asignaciones fallback (valores por defecto) para pistas legadas cargadas de archivos externos o presets que no contengan los nuevos parámetros. Cubre: R2.
-- [ ] T5 — Actualizar la acción `setTrackADSR` y añadir la nueva acción `setTrackPhysicalModel` en `src/stores/sequencer.ts` para mutar los parámetros en el store. Cubre: R3, R4.
-- [ ] T6 — Escribir pruebas unitarias en `tests/presets.spec.ts` o un archivo específico para validar que las mutaciones y acciones del store funcionan correctamente y que el modelo inicializa las propiedades requeridas. Cubre: R1, R2, R3, R4.
+- [x] T1 — Extender la interfaz `TrackInstance` en `src/stores/sequencer.ts` para incorporar las propiedades `decay`, `sustain`, `dampening` y `resonance`. Cubre: R1.
+- [x] T2 — Actualizar la función de inicialización de pistas `createDefaultTrack` en `src/stores/sequencer.ts` para proveer los valores por defecto de la envolvente y el modelado físico. Cubre: R2.
+- [x] T3 — Actualizar la colección estática de `PATTERN_PRESETS` en `src/stores/sequencer.ts` asignando valores coherentes de `decay`, `sustain`, `dampening` y `resonance` a cada una de las pistas predefinidas de todos los géneros. Cubre: R2.
+- [x] T4 — Modificar las acciones de carga `loadProject` y `loadPreset` en `src/stores/sequencer.ts` agregando asignaciones fallback (valores por defecto) para pistas legadas cargadas de archivos externos o presets que no contengan los nuevos parámetros. Cubre: R2.
+- [x] T5 — Actualizar la acción `setTrackADSR` y añadir la nueva acción `setTrackPhysicalModel` en `src/stores/sequencer.ts` para mutar los parámetros en el store. Cubre: R3, R4.
+- [x] T6 — Escribir pruebas unitarias en `tests/presets.spec.ts` o un archivo específico para validar que las mutaciones y acciones del store funcionan correctamente y que el modelo inicializa las propiedades requeridas. Cubre: R1, R2, R3, R4.
 
 ---
 
