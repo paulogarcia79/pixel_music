@@ -98,67 +98,67 @@ export class AudioEngine {
         synth = new Tone.NoiseSynth({ ...common, noise: { type: 'white' }, envelope: { attack: 0.001, decay: 0.02, sustain: 0 } });
         break;
       case 'bass_synth':
-        synth = new Tone.FMSynth({ ...common, harmonicity: 0.5, modulationIndex: 5, envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 0.5, modulationIndex: 5, envelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.5 } });
         break;
       case 'sub_bass':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 1, release: 0.8 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.05, decay: 0.2, sustain: 1, release: 0.8 } });
         break;
       case 'lead_synth':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.5 } });
         break;
       case 'super_saw':
-        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'fatsawtooth', count: 3, spread: 30 }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.5 } }).toDestination(); // Fallback toDestination for poly
-        return synth.connect(dest);
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'fatsawtooth', count: 3, spread: 30 }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.5, release: 0.5 } });
+        break;
       case 'acid_synth':
-        synth = new Tone.MonoSynth({ ...common, oscillator: { type: 'sawtooth' }, filter: { Q: 10, type: 'lowpass', rolloff: -24 }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 }, filterEnvelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1, baseFrequency: 200, octaves: 4 } });
+        synth = new Tone.PolySynth(Tone.MonoSynth, { ...common, oscillator: { type: 'sawtooth' }, filter: { Q: 10, type: 'lowpass', rolloff: -24 }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 }, filterEnvelope: { attack: 0.01, decay: 0.4, sustain: 0, release: 0.1, baseFrequency: 200, octaves: 4 } });
         break;
       case 'pad':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, release: 2 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.5, release: 2 } });
         break;
       case 'organ_pixel':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'pwm', modulationFrequency: 0.5 }, envelope: { attack: 0.01, sustain: 1, release: 0.1 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'pwm', modulationFrequency: 0.5 }, envelope: { attack: 0.01, sustain: 1, release: 0.1 } });
         break;
       case 'church_organ':
         synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.1, sustain: 1, release: 0.5 } });
         break;
       case 'guitar_pixel':
-        synth = new Tone.PluckSynth({ ...common, attackNoise: 1, dampening: 4000, resonance: 0.95 });
+        synth = new Tone.PolySynth(Tone.PluckSynth as any, { ...common, attackNoise: 1, dampening: 4000, resonance: 0.95 } as any);
         break;
       case 'guitar_dist':
-        synth = new Tone.MonoSynth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.5 } });
+        synth = new Tone.PolySynth(Tone.MonoSynth, { ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.5 } });
         break;
       case 'piano_pixel':
-        synth = new Tone.FMSynth({ ...common, harmonicity: 2, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.5, sustain: 0.1, release: 0.1 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 2, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.5, sustain: 0.1, release: 0.1 } });
         break;
       case 'electric_piano':
-        synth = new Tone.FMSynth({ ...common, harmonicity: 3.5, modulationIndex: 15, envelope: { attack: 0.005, decay: 1, sustain: 0, release: 1 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 3.5, modulationIndex: 15, envelope: { attack: 0.005, decay: 1, sustain: 0, release: 1 } });
         break;
       case 'honky_tonk':
         synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'triangle' }, envelope: { attack: 0.001, decay: 0.3, sustain: 0.1, release: 0.1 } });
         break;
       case 'flute_pixel':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.1, decay: 0.1, sustain: 1, release: 0.2 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.1, decay: 0.1, sustain: 1, release: 0.2 } });
         break;
       case 'clarinet_pixel':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.2 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'square' }, envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.2 } });
         break;
       case 'retro_oboe':
-        synth = new Tone.Synth({ ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.1, sustain: 0.8, release: 0.2 } });
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.1, decay: 0.1, sustain: 0.8, release: 0.2 } });
         break;
       case 'retro_brass':
-        synth = new Tone.MonoSynth({ ...common, oscillator: { type: 'sawtooth' }, filter: { Q: 2, type: 'lowpass', rolloff: -12 }, envelope: { attack: 0.1, decay: 0.2, sustain: 1, release: 0.5 }, filterEnvelope: { attack: 0.1, decay: 0.2, sustain: 0.5, release: 0.5, baseFrequency: 200, octaves: 2 } });
+        synth = new Tone.PolySynth(Tone.MonoSynth, { ...common, oscillator: { type: 'sawtooth' }, filter: { Q: 2, type: 'lowpass', rolloff: -12 }, envelope: { attack: 0.1, decay: 0.2, sustain: 1, release: 0.5 }, filterEnvelope: { attack: 0.1, decay: 0.2, sustain: 0.5, release: 0.5, baseFrequency: 200, octaves: 2 } });
         break;
       case 'ghost_synth':
-        synth = new Tone.FMSynth({ ...common, harmonicity: 0.5, modulationIndex: 20, oscillator: { type: 'sine' }, envelope: { attack: 1, decay: 1, sustain: 1, release: 2 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 0.5, modulationIndex: 20, oscillator: { type: 'sine' }, envelope: { attack: 1, decay: 1, sustain: 1, release: 2 } });
         break;
       case 'fm_pluck':
-        synth = new Tone.FMSynth({ ...common, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.2, sustain: 0.1, release: 0.1 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, modulationIndex: 10, envelope: { attack: 0.001, decay: 0.2, sustain: 0.1, release: 0.1 } });
         break;
       case 'fm_bell':
-        synth = new Tone.FMSynth({ ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
+        synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
       default:
-        synth = new Tone.Synth({ 
+        synth = new Tone.PolySynth(Tone.Synth, { 
           ...common, 
           oscillator: { type: (['pulse', 'pwm', 'sine', 'triangle', 'sawtooth', 'square'].includes(type) ? type : 'square') as any }, 
           envelope: { attack: 0.01, decay: 0.1, sustain: 0.2, release: 0.5 } 
@@ -247,13 +247,20 @@ export class AudioEngine {
         if (!pattern) return;
         pattern.tracks.forEach(track => {
           if (track.muted) return;
-          const note = track.notes[stepInPattern];
-          if (note) {
+          const notes = track.notes[stepInPattern];
+          if (notes && notes.length > 0) {
             const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
             
             if (nodes.synth.envelope) {
               nodes.synth.envelope.attack = track.attack;
               nodes.synth.envelope.release = track.release;
+            } else if (nodes.synth.set) {
+              nodes.synth.set({
+                envelope: {
+                  attack: track.attack,
+                  release: track.release
+                }
+              });
             }
             
             nodes.synth.volume.setValueAtTime(track.volume - 6, time);
@@ -261,10 +268,10 @@ export class AudioEngine {
             nodes.delay.wet.setValueAtTime(track.delayWet, time);
 
             const type = track.type;
-            if (['noise', 'snare', 'hihat', 'clap', 'crash', 'shaker', 'rimshot', 'cowbell'].includes(type)) {
+            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
               nodes.synth.triggerAttackRelease('16n', time);
             } else {
-              nodes.synth.triggerAttackRelease(note, '16n', time);
+              nodes.synth.triggerAttackRelease(notes, '16n', time);
             }
           }
         });
@@ -296,12 +303,21 @@ export class AudioEngine {
       const s = this.createSynthByType(type, context.destination, context);
       const store = useSequencerStore();
       const track = store.getTrackInPattern(trackName);
-      if (track && s.envelope) {
-        s.envelope.attack = track.attack;
-        s.envelope.release = track.release;
+      if (track) {
+        if (s.envelope) {
+          s.envelope.attack = track.attack;
+          s.envelope.release = track.release;
+        } else if (s.set) {
+          s.set({
+            envelope: {
+              attack: track.attack,
+              release: track.release
+            }
+          });
+        }
       }
       
-      if (['noise', 'snare', 'hihat', 'clap', 'crash', 'shaker', 'rimshot', 'cowbell'].includes(type)) {
+      if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
         s.triggerAttackRelease(duration);
       } else {
         s.triggerAttackRelease(note, duration);
@@ -328,13 +344,15 @@ export class AudioEngine {
         if (p.startStep + pattern.gridSize > maxSongStep) maxSongStep = p.startStep + pattern.gridSize;
         pattern.tracks.forEach(track => {
           if (track.muted) return;
-          Object.entries(track.notes).forEach(([step, note]) => {
-            songData.push({ 
-              t: (p.startStep + parseInt(step) - 1) * secondsPerStep, 
-              n: note, 
-              track, 
-              arrangerTrackId: t.id 
-            });
+          Object.entries(track.notes).forEach(([step, notes]) => {
+            if (notes && notes.length > 0) {
+              songData.push({ 
+                t: (p.startStep + parseInt(step) - 1) * secondsPerStep, 
+                n: notes, 
+                track, 
+                arrangerTrackId: t.id 
+              });
+            }
           });
         });
       }));
@@ -344,13 +362,15 @@ export class AudioEngine {
         maxSongStep = p.gridSize;
         p.tracks.forEach(track => {
           if (track.muted) return;
-          Object.entries(track.notes).forEach(([step, note]) => {
-            songData.push({ 
-              t: (parseInt(step) - 1) * secondsPerStep, 
-              n: note, 
-              track, 
-              arrangerTrackId: 0 
-            });
+          Object.entries(track.notes).forEach(([step, notes]) => {
+            if (notes && notes.length > 0) {
+              songData.push({ 
+                t: (parseInt(step) - 1) * secondsPerStep, 
+                n: notes, 
+                track, 
+                arrangerTrackId: 0 
+              });
+            }
           });
         });
       }
@@ -378,13 +398,20 @@ export class AudioEngine {
         if (n.synth.envelope) {
           n.synth.envelope.attack = d.track.attack;
           n.synth.envelope.release = d.track.release;
+        } else if (n.synth.set) {
+          n.synth.set({
+            envelope: {
+              attack: d.track.attack,
+              release: d.track.release
+            }
+          });
         }
         n.synth.volume.setValueAtTime(d.track.volume - 6, d.t);
         n.reverb.wet.setValueAtTime(d.track.reverbWet, d.t);
         n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
         
         const type = d.track.type;
-        if (['noise', 'snare', 'hihat', 'clap', 'crash', 'shaker', 'rimshot', 'cowbell'].includes(type)) {
+        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
           n.synth.triggerAttackRelease('16n', d.t);
         } else {
           n.synth.triggerAttackRelease(d.n, '16n', d.t);
