@@ -198,4 +198,46 @@ describe('DevicePanel.vue', () => {
     app.unmount();
     container.remove();
   });
+
+  it('R13: hides ADSR controls and SVG envelope shape when active track is percussion, displaying instead the transient envelope explanation', async () => {
+    const store = useSequencerStore();
+    store.clearAll();
+    const track = store.currentTracks[0];
+    track.name = 'Track 1';
+    track.type = 'kick'; // Un tipo percusivo
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+
+    const app = createApp({
+      render() {
+        return h(DevicePanel, {
+          isOpen: true,
+          onToggle: () => {}
+        });
+      }
+    });
+
+    app.mount(container);
+    await nextTick();
+
+    // R13: Should NOT show ADSR Envelope controls (Attack, Decay, Sustain, Release)
+    expect(container.textContent).not.toContain('Attack');
+    expect(container.textContent).not.toContain('Decay');
+    expect(container.textContent).not.toContain('Sustain');
+    expect(container.textContent).not.toContain('Release');
+    expect(container.textContent).not.toContain('Envelope Shape');
+
+    // R13: Should NOT show the ADSR curve path
+    const path = container.querySelector('svg path[stroke="#ff2a6d"]');
+    expect(path).toBeNull();
+
+    // R13: Should show the explanatory block message
+    expect(container.textContent).toContain('DRUM SYNTHESIS: TRANSIENT ENVELOPE IS AUTOMATIC');
+    expect(container.textContent).toContain('Short-duration transient pulses are automatically managed');
+
+    app.unmount();
+    container.remove();
+  });
 });
+
