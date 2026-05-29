@@ -26,6 +26,12 @@
       "description": "Soporte de polifonía en pistas instrumentales para la programación de acordes (Step Notes) en el Piano Roll, transformando los sintetizadores melódicos a Tone.PolySynth en el AudioEngine y garantizando retrocompatibilidad al migrar notas monofónicas previas a arreglos.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "adsr_envelope",
+      "description": "Implementación completa de la envolvente ADSR (Attack, Decay, Sustain, Release) y modelado físico (Dampening, Resonance) con controles específicos e interactivos en el Device Panel de Eurorack, actualizando el store y modulando AudioEngine en reproducción, preescucha y exportación.",
+      "sdd": true,
+      "status": "in_progress"
     }
   ]
 }

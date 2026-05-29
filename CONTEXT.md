@@ -39,7 +39,11 @@ La instancia de un patrón específico programada para reproducirse en un carril
 _Avoid_: Bloque de sonido, clip.
 
 **Envelope (Envolvente ADSR)**:
-El perfil dinámico que modula la amplitud de un instrumento desde que se activa una nota hasta que se silencia, configurable mediante parámetros de Attack (Ataque) y Release (Liberación).
+El perfil dinámico que modula la amplitud de un instrumento desde que se activa una nota hasta que se silencia, configurable mediante los parámetros de Attack (Ataque), Decay (Decaimiento), Sustain (Sostenido) y Release (Liberación).
+- **Attack (Ataque)**: Tiempo que tarda la señal en llegar desde cero hasta su nivel máximo al activarse la nota.
+- **Decay (Decaimiento)**: Tiempo que tarda la señal en descender desde el nivel máximo de ataque hasta el nivel de sostenido.
+- **Sustain (Sostenido)**: El nivel de ganancia constante que se mantiene mientras la nota permanece activa.
+- **Release (Liberación)**: Tiempo que tarda la señal en desvanecerse por completo una vez que la nota deja de estar activa.
 _Avoid_: Duración, volumen de paso.
 
 **FX Send (Envío de Efectos)**:
