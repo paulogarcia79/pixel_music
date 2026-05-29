@@ -21,6 +21,15 @@ _Avoid_: Ritmo predeterminado, plantilla de compás.
 La unidad de tiempo fundamental dentro de la rejilla de un secuenciador (por defecto una semicorchea), donde una nota puede ser programada o activada.
 _Avoid_: Celda, tick de reloj.
 
+**Polyphony (Polifonía)**:
+La capacidad de una pista o instrumento para generar y reproducir múltiples sonidos o notas de forma simultánea en un mismo instante de tiempo.
+_Avoid_: Multicanalidad, acordes globales.
+
+**Step Notes (Notas de Paso)**:
+El conjunto de una o más notas programadas y reproducidas de manera simultánea en un paso específico del secuenciador.
+_Avoid_: Acorde programado, notas de rejilla.
+
+
 **Arrangement (Arreglo)**:
 La estructura global de una composición musical, formada por la colocación secuencial de diversos patrones a lo largo del tiempo en los carriles del Song Arranger.
 _Avoid_: Composición, secuenciación global.
