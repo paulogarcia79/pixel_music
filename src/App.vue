@@ -64,7 +64,10 @@ const INSTRUMENT_CATEGORIES: Record<InstrumentType, { icon: string; category: st
   fm_pluck: { icon: 'waves', category: 'Synth' },
   fm_bell: { icon: 'waves', category: 'Synth' },
   retro_brass: { icon: 'waves', category: 'Synth' },
-  ghost_synth: { icon: 'waves', category: 'Synth' }
+  ghost_synth: { icon: 'waves', category: 'Synth' },
+  fat_square: { icon: 'waves', category: 'Synth' },
+  retro_laser: { icon: 'drum', category: 'Drum' },
+  retro_explosion: { icon: 'drum', category: 'Drum' }
 };
 
 const getTrackIcon = (type: InstrumentType) => {

@@ -49,6 +49,7 @@ const INSTRUMENTS: InstrumentDefinition[] = [
   { type: 'pad', name: 'Chamber Pad', icon: 'waves', category: 'SYN' },
   { type: 'fm_pluck', name: 'FM Pluck', icon: 'waves', category: 'SYN' },
   { type: 'fm_bell', name: 'FM Bell', icon: 'waves', category: 'SYN' },
+  { type: 'fat_square', name: 'Fat Square Wave', icon: 'waves', category: 'SYN' },
 
   // DRM
   { type: 'kick', name: '8bit Kick', icon: 'drum', category: 'DRM' },
@@ -58,6 +59,8 @@ const INSTRUMENTS: InstrumentDefinition[] = [
   { type: 'clap', name: 'Chipped Clap', icon: 'drum', category: 'DRM' },
   { type: 'rimshot', name: 'Rimshot', icon: 'drum', category: 'DRM' },
   { type: 'cowbell', name: 'Cowbell', icon: 'drum', category: 'DRM' },
+  { type: 'retro_laser', name: 'Retro Laser', icon: 'drum', category: 'DRM' },
+  { type: 'retro_explosion', name: 'Pixel Explosion', icon: 'drum', category: 'DRM' },
 
   // KEY
   { type: 'piano_pixel', name: 'Pixel Piano', icon: 'keyboard', category: 'KEY' },
@@ -251,7 +254,7 @@ const envelopePath = computed(() => {
 
 const isPercussion = computed(() => {
   if (!selectedTrack.value) return false;
-  const percussionTypes = ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'];
+  const percussionTypes = ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'];
   return percussionTypes.includes(selectedTrack.value.type);
 });
 </script>

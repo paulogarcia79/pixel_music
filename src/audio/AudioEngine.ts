@@ -8,6 +8,53 @@ interface TrackNodes {
   currentType: InstrumentType;
 }
 
+class ExplosionSynth {
+  private noise: Tone.NoiseSynth;
+  private filter: Tone.Filter;
+  public volume: Tone.Volume;
+  private context: Tone.BaseContext;
+
+  constructor(options: { context: Tone.BaseContext }) {
+    this.context = options.context;
+    this.volume = new Tone.Volume({ context: this.context });
+    this.filter = new Tone.Filter({ context: this.context, type: 'lowpass', frequency: 800, Q: 2 }).connect(this.volume);
+    this.noise = new Tone.NoiseSynth({
+      context: this.context,
+      noise: { type: 'white' },
+      envelope: { attack: 0.01, decay: 1.5, sustain: 0, release: 1.0 }
+    }).connect(this.filter);
+  }
+
+  public connect(dest: Tone.ToneAudioNode) {
+    this.volume.connect(dest);
+    return this;
+  }
+
+  public set(_options: any) {
+    return this;
+  }
+
+  public triggerAttackRelease(duration: string | number, time?: number) {
+    this.noise.triggerAttackRelease(duration, time);
+    const t = time ?? Tone.now();
+    this.filter.frequency.setValueAtTime(1000, t);
+    this.filter.frequency.exponentialRampToValueAtTime(100, t + 1.5);
+    return this;
+  }
+
+  public triggerRelease(time?: number) {
+    if (this.noise.triggerRelease) this.noise.triggerRelease(time);
+    return this;
+  }
+
+  public dispose() {
+    this.noise.dispose();
+    this.filter.dispose();
+    this.volume.dispose();
+    return this;
+  }
+}
+
 export class PolyPluckSynth {
   private voices: Tone.PluckSynth[] = [];
   private voiceIndex = 0;
@@ -221,6 +268,15 @@ export class AudioEngine {
       case 'fm_bell':
         synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
+      case 'fat_square':
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'fatsquare', count: 3, spread: 25 }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.5 } });
+        break;
+      case 'retro_laser':
+        synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.15, octaves: 4, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 0.3 } });
+        break;
+      case 'retro_explosion':
+        synth = new ExplosionSynth({ context });
+        break;
       default:
         synth = new Tone.PolySynth(Tone.Synth, { 
           ...common, 
@@ -342,8 +398,8 @@ export class AudioEngine {
             nodes.delay.wet.setValueAtTime(track.delayWet, time);
 
             const type = track.type;
-            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-              if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+              if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
                 const noteToPlay = (notes && notes.length > 0 && notes[0]) ? notes[0] : (type === 'kick' ? 'C2' : 'C3');
                 nodes.synth.triggerAttackRelease(noteToPlay, '16n', time);
               } else {
@@ -406,8 +462,8 @@ export class AudioEngine {
         }
       }
       
-      if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-        if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+      if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+        if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
           s.triggerAttackRelease(note || 'C2', duration);
         } else {
           s.triggerAttackRelease(duration);
@@ -514,8 +570,8 @@ export class AudioEngine {
         n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
         
         const type = d.track.type;
-        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-          if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+          if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
             const rawNote = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : null;
             const noteToPlay = rawNote || (type === 'kick' ? 'C2' : 'C3');
             n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);

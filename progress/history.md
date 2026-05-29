@@ -165,3 +165,20 @@
 - [x] Bug corregido con éxito aplicando comprobaciones y fallbacks robustos para kick, tom, conga y woodblock.
 - [x] Toda la suite completa de 68 tests (incluyendo 3 nuevos tests dedicados) pasa al 100%.
 - [x] Aprobado formalmente por el subagente `reviewer` en `progress/review_tonal_percussion_bugfix.md`.
+
+## Sesión: Ampliación de Instrumentos a 33 tipos (instruments_expansion) (2026-05-29)
+### Feature en curso
+- `instruments_expansion` (en la rama `feature/instruments-expansion`)
+
+### Plan
+- [x] T1 — Añadir los nuevos literales en `src/stores/sequencer.ts`. Cubre: R1.
+- [x] T2 — Agregar los tres registros a `INSTRUMENTS` y actualizar `isPercussion` en `src/components/sequencer/DevicePanel.vue`. Cubre: R2, R3.
+- [x] T3 — Implementar la clase de envoltura `ExplosionSynth` en `src/audio/AudioEngine.ts`. Cubre: R4.
+- [x] T4 — Actualizar flujos de percusión en `src/audio/AudioEngine.ts` (`setupLoop`, `playNote`, `exportAudioOffline`). Cubre: R5, R6.
+- [x] T5 — Implementar la creación de sintetizadores en `createSynthByType` para `fat_square`, `retro_laser` y `retro_explosion` en `src/audio/AudioEngine.ts`. Cubre: R7.
+- [x] T6 — Escribir pruebas unitarias en `tests/audioEngine.spec.ts` para verificar instanciación y disparo de los nuevos instrumentos. Cubre: R1, R4, R7.
+
+- [x] Implementación completada con éxito.
+- [x] Todas las pruebas (71 tests en verde) pasan perfectamente.
+- [x] Compilación de producción validada exitosamente.
+- [x] Aprobado por el subagente `reviewer` con veredicto APPROVED en `progress/review_instruments_expansion.md`.
