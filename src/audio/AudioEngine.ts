@@ -8,6 +8,70 @@ interface TrackNodes {
   currentType: InstrumentType;
 }
 
+export class PolyPluckSynth {
+  private voices: Tone.PluckSynth[] = [];
+  private voiceIndex = 0;
+  public volume: Tone.Param<"decibels">;
+  private volumeNode: Tone.Volume;
+  private context: Tone.BaseContext;
+
+  constructor(options: { context: Tone.BaseContext, voicesCount?: number, dampening?: number, resonance?: number }) {
+    this.context = options.context;
+    const voicesCount = options.voicesCount || 8;
+    this.volumeNode = new Tone.Volume({ context: this.context, volume: 0 });
+    this.volume = this.volumeNode.volume;
+    
+    for (let i = 0; i < voicesCount; i++) {
+      const voice = new Tone.PluckSynth({
+        context: this.context,
+        attackNoise: 1,
+        dampening: options.dampening ?? 4000,
+        resonance: options.resonance ?? 0.95
+      });
+      voice.connect(this.volumeNode);
+      this.voices.push(voice);
+    }
+  }
+
+  public connect(dest: Tone.ToneAudioNode) {
+    this.volumeNode.connect(dest);
+    return this;
+  }
+
+  public set(options: any) {
+    if (options.dampening !== undefined || options.resonance !== undefined) {
+      this.voices.forEach(v => {
+        if (options.dampening !== undefined) v.dampening = options.dampening;
+        if (options.resonance !== undefined) v.resonance = options.resonance;
+      });
+    }
+    return this;
+  }
+
+  public triggerAttackRelease(notes: string | string[], duration: string | number, time?: number) {
+    const notesArray = Array.isArray(notes) ? notes : [notes];
+    notesArray.forEach(note => {
+      const voice = this.voices[this.voiceIndex];
+      voice.triggerAttackRelease(note, duration, time);
+      this.voiceIndex = (this.voiceIndex + 1) % this.voices.length;
+    });
+    return this;
+  }
+
+  public triggerRelease(time?: number) {
+    this.voices.forEach(v => {
+      if (v.triggerRelease) v.triggerRelease(time);
+    });
+    return this;
+  }
+
+  public dispose() {
+    this.voices.forEach(v => v.dispose());
+    this.volumeNode.dispose();
+    return this;
+  }
+}
+
 export class AudioEngine {
   private static trackNodes: Map<string, TrackNodes> = new Map();
   private static lastPlayedNote: string | null = null;
@@ -122,7 +186,7 @@ export class AudioEngine {
         synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'sine' }, envelope: { attack: 0.1, sustain: 1, release: 0.5 } });
         break;
       case 'guitar_pixel':
-        synth = new Tone.PolySynth(Tone.PluckSynth as any, { ...common, attackNoise: 1, dampening: 4000, resonance: 0.95 } as any);
+        synth = new PolyPluckSynth({ context, dampening: 4000, resonance: 0.95 });
         break;
       case 'guitar_dist':
         synth = new Tone.PolySynth(Tone.MonoSynth, { ...common, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.5 } });
