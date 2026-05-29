@@ -19,6 +19,7 @@ const selectedTrack = computed(() => {
   return store.currentTracks.find(t => t.name === store.selectedTrackName);
 });
 
+// T2: Definición de tipos rigurosos para las categorías del catálogo de instrumentos
 type InstrumentCategory = 'WAV' | 'SYN' | 'DRM' | 'KEY';
 
 interface InstrumentDefinition {
