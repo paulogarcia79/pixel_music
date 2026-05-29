@@ -31,7 +31,7 @@
       "name": "adsr_envelope",
       "description": "Implementación completa de la envolvente ADSR (Attack, Decay, Sustain, Release) y modelado físico (Dampening, Resonance) con controles específicos e interactivos en el Device Panel de Eurorack, actualizando el store y modulando AudioEngine en reproducción, preescucha y exportación.",
       "sdd": true,
-      "status": "in_progress"
+      "status": "done"
     }
   ]
 }
