@@ -515,7 +515,12 @@ export class AudioEngine {
         
         const type = d.track.type;
         if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'].includes(type)) {
-          n.synth.triggerAttackRelease('16n', d.t);
+          if (['kick', 'tom', 'conga', 'woodblock'].includes(type)) {
+            const noteToPlay = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : (type === 'kick' ? 'C2' : 'C3');
+            n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);
+          } else {
+            n.synth.triggerAttackRelease('16n', d.t);
+          }
         } else {
           n.synth.triggerAttackRelease(d.n, '16n', d.t);
         }
