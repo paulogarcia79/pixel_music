@@ -116,5 +116,19 @@
 - [x] Tareas finalizadas y validadas al 100% de éxito.
 - [x] Aprobado por el subagente `reviewer` con veredicto APPROVED en `progress/review_adsr_envelope.md`.
 
+## Sesión: Corrección de Bug en Guitar Pixel (Classic Guitar PluckSynth) (2026-05-29)
+### Feature en curso
+- `classic_guitar_bugfix` (en la rama `bugfix/classic-guitar-voice`)
+
+### Plan
+- [x] T1 — Implementar la clase de envoltura `PolyPluckSynth` en `src/audio/AudioEngine.ts` para gestionar un pool de voces de `Tone.PluckSynth` de forma rotatoria y polyfónica. Cubre: R1, R2, R3, R4, R5.
+- [x] T2 — Actualizar el caso de inicialización `guitar_pixel` en `createSynthByType` para instanciar `PolyPluckSynth` en lugar de intentar envolverlo en `Tone.PolySynth`. Cubre: R1.
+- [x] T3 — Agregar pruebas unitarias e integración en `tests/audioEngine.spec.ts` para verificar la estabilidad de `guitar_pixel` en reproducción y evitar errores de herencia de `Monophonic`. Cubre: R1, R2, R3, R4, R5.
+- [x] T4 — Ejecutar `./init.sh` en el workspace para certificar que compila y que todas las pruebas pasan exitosamente al 100%. Cubre: R1-R5.
+
+- [x] Corrección completada con éxito.
+- [x] Toda la suite de 64 tests pasa al 100%.
+- [x] Aprobado formalmente por el subagente `reviewer` en `progress/review_classic_guitar_bugfix.md`.
+
 
 

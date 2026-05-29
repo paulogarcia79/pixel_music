@@ -32,6 +32,12 @@
       "description": "Implementación completa de la envolvente ADSR (Attack, Decay, Sustain, Release) y modelado físico (Dampening, Resonance) con controles específicos e interactivos en el Device Panel de Eurorack, actualizando el store y modulando AudioEngine en reproducción, preescucha y exportación.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "classic_guitar_bugfix",
+      "description": "Corregir error de herencia Monophonic de PluckSynth en guitar_pixel mediante un envoltorio PolyPluckSynth pool en el AudioEngine.",
+      "sdd": false,
+      "status": "done"
     }
   ]
 }
