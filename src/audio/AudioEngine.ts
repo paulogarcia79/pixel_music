@@ -8,6 +8,53 @@ interface TrackNodes {
   currentType: InstrumentType;
 }
 
+class ExplosionSynth {
+  private noise: Tone.NoiseSynth;
+  private filter: Tone.Filter;
+  public volume: Tone.Volume;
+  private context: Tone.BaseContext;
+
+  constructor(options: { context: Tone.BaseContext }) {
+    this.context = options.context;
+    this.volume = new Tone.Volume({ context: this.context });
+    this.filter = new Tone.Filter({ context: this.context, type: 'lowpass', frequency: 800, Q: 2 }).connect(this.volume);
+    this.noise = new Tone.NoiseSynth({
+      context: this.context,
+      noise: { type: 'white' },
+      envelope: { attack: 0.01, decay: 1.5, sustain: 0, release: 1.0 }
+    }).connect(this.filter);
+  }
+
+  public connect(dest: Tone.ToneAudioNode) {
+    this.volume.connect(dest);
+    return this;
+  }
+
+  public set(options: any) {
+    return this;
+  }
+
+  public triggerAttackRelease(duration: string | number, time?: number) {
+    this.noise.triggerAttackRelease(duration, time);
+    const t = time ?? Tone.now();
+    this.filter.frequency.setValueAtTime(1000, t);
+    this.filter.frequency.exponentialRampToValueAtTime(100, t + 1.5);
+    return this;
+  }
+
+  public triggerRelease(time?: number) {
+    if (this.noise.triggerRelease) this.noise.triggerRelease(time);
+    return this;
+  }
+
+  public dispose() {
+    this.noise.dispose();
+    this.filter.dispose();
+    this.volume.dispose();
+    return this;
+  }
+}
+
 export class PolyPluckSynth {
   private voices: Tone.PluckSynth[] = [];
   private voiceIndex = 0;
