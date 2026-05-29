@@ -44,6 +44,12 @@
       "description": "Rediseño de la interfaz de selección de instrumentos en el Device Panel de Eurorack implementando pestañas de categoría (WAV, SYN, DRM, KEY) y una rejilla compacta de dos columnas con auto-foco reactivo bidireccional y catálogo ampliado de 30 instrumentos.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "tonal_percussion_bugfix",
+      "description": "Corregir el volumen inaudible de kick, tom, conga y woodblock modulando la nota tonal correcta en lugar del valor estático 16n en el AudioEngine.",
+      "sdd": false,
+      "status": "done"
     }
   ]
 }
