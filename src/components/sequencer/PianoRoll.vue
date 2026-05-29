@@ -53,11 +53,12 @@ const isNoteInSelectedScale = (note: string) => {
 const isSharp = (note: string) => note.includes('#');
 
 const isNoteActive = (trackName: string, step: number, note: string) => {
-  return store.getNoteAt(trackName, step) === note;
+  const stepNotes = store.getNoteAt(trackName, step);
+  return stepNotes ? stepNotes.includes(note) : false;
 };
 
 const getGhostNotes = (step: number, note: string) => {
-  return store.currentTracks.filter(t => t.name !== store.selectedTrackName && t.notes[step] === note);
+  return store.currentTracks.filter(t => t.name !== store.selectedTrackName && t.notes[step] && t.notes[step].includes(note));
 };
 
 const toggleNote = (step: number, note: string) => {
@@ -65,7 +66,7 @@ const toggleNote = (step: number, note: string) => {
   const track = store.getTrackInPattern(trackName);
   
   if (isNoteActive(trackName, step, note)) {
-    store.removeNote(trackName, step);
+    store.removeNote(trackName, step, note);
   } else {
     store.addNote(trackName, step, note);
     if (track) {
