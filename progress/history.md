@@ -104,4 +104,17 @@
 - [x] Todos los 62 tests pasaron exitosamente.
 - [x] Aprobado por el subagente `reviewer` en `progress/review_adsr_envelope.md`.
 
+## Sesión: ADSR Percussion Conditional Visibility (2026-05-29)
+### Feature en curso
+- `adsr_envelope` (en la rama `feature/adsr-envelope`)
+
+### Plan
+- [x] T16 — Ocultar controles ADSR y curva SVG en `DevicePanel.vue` para pistas de percusión y renderizar bloque informativo de modulación automática. Cubre: R13.
+- [x] T17 — Agregar pruebas de componente correspondientes en `DevicePanel.spec.ts`. Cubre: R13.
+- [x] T15 — Verificación final del entorno y paso completo de tests con `./init.sh`. Cubre: R1-R13.
+
+- [x] Tareas finalizadas y validadas al 100% de éxito.
+- [x] Aprobado por el subagente `reviewer` con veredicto APPROVED en `progress/review_adsr_envelope.md`.
+
+
 
