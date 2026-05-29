@@ -16,6 +16,10 @@ vi.mock('tone', () => {
   }
   return {
     Synth: class extends GenericMock {},
+    PolySynth: class extends GenericMock { set() { return this; } },
+    MonoSynth: class extends GenericMock {},
+    PluckSynth: class extends GenericMock {},
+    MetalSynth: class extends GenericMock {},
     NoiseSynth: class extends GenericMock {},
     MembraneSynth: class extends GenericMock {},
     FMSynth: class extends GenericMock {},

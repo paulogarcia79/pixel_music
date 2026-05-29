@@ -65,15 +65,15 @@ describe('Pattern Presets', () => {
       expect(kick.volume).toBe(-8);
       expect(kick.attack).toBe(0.01);
       expect(kick.release).toBe(0.4);
-      expect(kick.notes[1]).toBe('C2');
+      expect(kick.notes[1]).toEqual(['C2']);
 
       const pad = pattern.tracks.find(t => t.name === 'Pad')!;
       expect(pad.type).toBe('pad');
       expect(pad.volume).toBe(-12);
       expect(pad.attack).toBe(0.4);
       expect(pad.release).toBe(1.2);
-      expect(pad.notes[1]).toBe('C4');
-      expect(pad.notes[17]).toBe('G4');
+      expect(pad.notes[1]).toEqual(['C4']);
+      expect(pad.notes[17]).toEqual(['G4']);
     });
 
     it('R5: should correctly update the BPM when a preset is loaded', () => {
