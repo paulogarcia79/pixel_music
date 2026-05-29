@@ -268,6 +268,15 @@ export class AudioEngine {
       case 'fm_bell':
         synth = new Tone.PolySynth(Tone.FMSynth, { ...common, harmonicity: 3, modulationIndex: 15, envelope: { attack: 0.01, decay: 1, sustain: 0, release: 1 } });
         break;
+      case 'fat_square':
+        synth = new Tone.PolySynth(Tone.Synth, { ...common, oscillator: { type: 'fatsquare', count: 3, spread: 25 }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.5 } });
+        break;
+      case 'retro_laser':
+        synth = new Tone.MembraneSynth({ ...common, pitchDecay: 0.15, octaves: 4, oscillator: { type: 'sawtooth' }, envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 0.3 } });
+        break;
+      case 'retro_explosion':
+        synth = new ExplosionSynth({ context });
+        break;
       default:
         synth = new Tone.PolySynth(Tone.Synth, { 
           ...common, 
