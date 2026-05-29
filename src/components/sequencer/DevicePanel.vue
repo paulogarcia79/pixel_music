@@ -210,6 +210,12 @@ const envelopePath = computed(() => {
 
   return `M 0 80 L ${a} 10 L ${a + d} ${h} L ${a + d + s} ${h} L ${a + d + s + r} 80`;
 });
+
+const isPercussion = computed(() => {
+  if (!selectedTrack.value) return false;
+  const percussionTypes = ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot'];
+  return percussionTypes.includes(selectedTrack.value.type);
+});
 </script>
 
 <template>
@@ -273,84 +279,97 @@ const envelopePath = computed(() => {
 
         <!-- 2. ADSR ENVELOPE SECTION (Attack / Decay / Sustain / Release + Visualizador) -->
         <div class="flex-[1.5] px-4 flex justify-between gap-4">
-          <div class="flex flex-col justify-between">
-            <div class="flex items-center gap-1.5 mb-2">
-              <PixelIcon name="activity" class="w-3.5 h-3.5 text-neon-pink" />
-              <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">2. ADSR Envelope</span>
-            </div>
+          <template v-if="!isPercussion">
+            <div class="flex flex-col justify-between">
+              <div class="flex items-center gap-1.5 mb-2">
+                <PixelIcon name="activity" class="w-3.5 h-3.5 text-neon-pink" />
+                <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">2. ADSR Envelope</span>
+              </div>
 
-            <!-- Perillas de control ADSR -->
-            <div class="flex gap-2 items-center">
-              <Knob 
-                v-model="trackAttack"
-                :min="0.001"
-                :max="2.0"
-                :step="0.01"
-                :defaultValue="0.01"
-                label="Attack"
-                unit="s"
-              />
-              <Knob 
-                v-model="trackDecay"
-                :min="0.01"
-                :max="2.0"
-                :step="0.01"
-                :defaultValue="0.1"
-                label="Decay"
-                unit="s"
-              />
-              <Knob 
-                v-model="trackSustain"
-                :min="0.0"
-                :max="1.0"
-                :step="0.05"
-                :defaultValue="0.8"
-                label="Sustain"
-                unit=""
-              />
-              <Knob 
-                v-model="trackRelease"
-                :min="0.01"
-                :max="4.0"
-                :step="0.05"
-                :defaultValue="0.5"
-                label="Release"
-                unit="s"
-              />
-            </div>
-          </div>
-
-          <!-- Mini-visualizador interactivo de envolvente -->
-          <div class="flex flex-col justify-between w-48 h-full">
-            <span class="text-[8px] font-mono text-gray-500 uppercase tracking-widest text-right">Envelope Shape</span>
-            <div class="relative w-full h-[80px] bg-black/60 rounded border border-gray-800/80 shadow-inner overflow-hidden">
-              <svg class="w-full h-full" viewBox="0 0 200 80">
-                <!-- Grilla fluorescente retro -->
-                <defs>
-                  <pattern id="device-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(5, 217, 232, 0.05)" stroke-width="0.5"/>
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#device-grid)" />
-                
-                <!-- Curva ADSR fluorescente -->
-                <path 
-                  :d="envelopePath" 
-                  fill="none" 
-                  stroke="#ff2a6d" 
-                  stroke-width="1.8" 
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="filter drop-shadow-[0_0_3px_#ff2a6d]" 
+              <!-- Perillas de control ADSR -->
+              <div class="flex gap-2 items-center">
+                <Knob 
+                  v-model="trackAttack"
+                  :min="0.001"
+                  :max="2.0"
+                  :step="0.01"
+                  :defaultValue="0.01"
+                  label="Attack"
+                  unit="s"
                 />
-                
-                <!-- Nodos interactivos/visuales -->
-                <circle :cx="aw" cy="10" r="2.5" fill="#05d9e8" class="shadow-lg" />
-                <circle :cx="aw + dw" :cy="sh" r="2.5" fill="#05d9e8" />
-                <circle :cx="aw + dw + sw" :cy="sh" r="2.5" fill="#05d9e8" />
-                <circle :cx="aw + dw + sw + rw" cy="80" r="2.5" fill="#05d9e8" />
-              </svg>
+                <Knob 
+                  v-model="trackDecay"
+                  :min="0.01"
+                  :max="2.0"
+                  :step="0.01"
+                  :defaultValue="0.1"
+                  label="Decay"
+                  unit="s"
+                />
+                <Knob 
+                  v-model="trackSustain"
+                  :min="0.0"
+                  :max="1.0"
+                  :step="0.05"
+                  :defaultValue="0.8"
+                  label="Sustain"
+                  unit=""
+                />
+                <Knob 
+                  v-model="trackRelease"
+                  :min="0.01"
+                  :max="4.0"
+                  :step="0.05"
+                  :defaultValue="0.5"
+                  label="Release"
+                  unit="s"
+                />
+              </div>
             </div>
+
+            <!-- Mini-visualizador interactivo de envolvente -->
+            <div class="flex flex-col justify-between w-48 h-full">
+              <span class="text-[8px] font-mono text-gray-500 uppercase tracking-widest text-right">Envelope Shape</span>
+              <div class="relative w-full h-[80px] bg-black/60 rounded border border-gray-800/80 shadow-inner overflow-hidden">
+                <svg class="w-full h-full" viewBox="0 0 200 80">
+                  <!-- Grilla fluorescente retro -->
+                  <defs>
+                    <pattern id="device-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                      <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(5, 217, 232, 0.05)" stroke-width="0.5"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#device-grid)" />
+                  
+                  <!-- Curva ADSR fluorescente -->
+                  <path 
+                    :d="envelopePath" 
+                    fill="none" 
+                    stroke="#ff2a6d" 
+                    stroke-width="1.8" 
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="filter drop-shadow-[0_0_3px_#ff2a6d]" 
+                  />
+                  
+                  <!-- Nodos interactivos/visuales -->
+                  <circle :cx="aw" cy="10" r="2.5" fill="#05d9e8" class="shadow-lg" />
+                  <circle :cx="aw + dw" :cy="sh" r="2.5" fill="#05d9e8" />
+                  <circle :cx="aw + dw + sw" :cy="sh" r="2.5" fill="#05d9e8" />
+                  <circle :cx="aw + dw + sw + rw" cy="80" r="2.5" fill="#05d9e8" />
+                </svg>
+              </div>
+            </div>
+          </template>
+          <div v-else class="w-full h-full flex flex-col justify-center bg-black/50 border border-dashed border-neon-cyan/30 rounded p-3 select-none">
+            <div class="flex items-center gap-2 mb-1.5 text-neon-cyan filter drop-shadow-[0_0_2px_rgba(5,217,232,0.4)]">
+              <PixelIcon name="drum" class="w-4 h-4 animate-bounce" />
+              <span class="font-mono text-[10px] font-bold tracking-widest uppercase">
+                DRUM SYNTHESIS: TRANSIENT ENVELOPE IS AUTOMATIC
+              </span>
+            </div>
+            <p class="font-mono text-[9px] text-gray-400 leading-normal">
+              Short-duration transient pulses are automatically managed by the dedicated retro percussion synthesis engine. Prolonged ADSR envelope shaping is disabled to maintain snappy transient response.
+            </p>
           </div>
         </div>
 
