@@ -62,6 +62,12 @@
       "description": "Fix the volume issue in ExplosionSynth inside src/audio/AudioEngine.ts by exposing a Tone.Param<\"decibels\"> volume signal instead of a raw Tone.Volume node, so that .volume.setValueAtTime works correctly.",
       "sdd": true,
       "status": "done"
+    },
+    {
+      "name": "modulation_effects",
+      "description": "Efectos de Modulación (Chorus, Flanger, Phaser), LFO (con destinos de afinación, filtro y volumen) y Arpegiadores (con rate, dirección y rango de octavas) integrados en el Eurorack Device Panel y en AudioEngine, con reloj a 32n.",
+      "sdd": true,
+      "status": "done"
     }
   ]
 }

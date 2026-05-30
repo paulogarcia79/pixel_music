@@ -50,6 +50,49 @@ _Avoid_: Duración, volumen de paso.
 El nivel o proporción de la señal de una pista que se redirige hacia los procesadores de efectos globales de Reverb y Delay.
 _Avoid_: Volumen de efecto, filtro FX.
 
+**Modulation Slot (Ranura de Modulación)**:
+Una sección en la pista que permite activar y configurar un único efecto de modulación dinámico (Chorus, Flanger o Phaser) para alterar su textura de sonido en tiempo real mediante parámetros de frecuencia (Rate), profundidad (Depth) y mezcla (Wet).
+_Avoid_: Multi-efectos, cadena de modulación.
+
+**Chorus (Coro)**:
+Efecto de modulación que duplica la señal original, aplicando ligeras variaciones de afinación y retraso temporal a las copias para simular el sonido de múltiples fuentes interpretando al unísono.
+_Avoid_: Eco rápido, afinador secundario.
+
+**Flanger (Modulador de Retardo)**:
+Efecto de modulación que mezcla la señal original con una versión retrasada en el tiempo cuyo retardo oscila continuamente, produciendo un barrido espectral característico ("swooshing").
+_Avoid_: Jet-plane filter, barrido de fase.
+
+**Phaser (Desfasador)**:
+Efecto de modulación que altera la fase de la señal mediante filtros pasa-todo, creando picos y valles en el espectro de frecuencias que se desplazan dinámicamente para generar un sonido ondulante.
+_Avoid_: Phaser sweep, oscilador de fase.
+
+**Low Frequency Oscillator (LFO / Oscilador de Baja Frecuencia)**:
+Un generador de ondas periódico que opera a frecuencias inaudibles (por debajo de 20 Hz) diseñado específicamente para modular cíclicamente otros parámetros (como la afinación, el volumen o el filtro) de un instrumento en tiempo real.
+_Avoid_: Oscilador primario, generador de tono.
+
+**Vibrato**:
+Efecto de modulación que genera una oscilación periódica y sutil en la afinación (tono) de un instrumento, controlado típicamente por un LFO asignado a la frecuencia del oscilador.
+_Avoid_: Trémolo de tono, desafinación estática.
+
+**Tremolo (Trémolo)**:
+Efecto de modulación que genera una variación periódica en la amplitud (volumen) de un sonido, produciendo un efecto de pulsación rítmica continuo a través de un LFO asignado a un nodo de ganancia.
+_Avoid_: Vibrato de volumen, paneo.
+
+**Arpeggiator (Arpegiador)**:
+Un módulo de secuenciación automática en la pista que toma acordes (múltiples notas programadas en un paso) y reproduce sus notas individuales de forma secuencial y cíclica a una velocidad de subdivisión y dirección específicas.
+_Avoid_: Generador de acordes, secuenciador de notas.
+
+**Arpeggiator Pattern (Dirección del Arpegiador)**:
+El orden o secuencia en el que se reproducen las notas de un acorde al activar el arpegiador (Up/Ascendente, Down/Descendente, UpDown/Alterno, Random/Aleatorio).
+_Avoid_: Dirección de tono, orden de notas.
+
+**Arpeggiator Rate (Velocidad del Arpegiador)**:
+La subdivisión temporal (ej. corchea - 8n, semicorchea - 16n, fusa - 32n) que define el ritmo y rapidez de transición entre las notas secuenciadas por el arpegiador.
+_Avoid_: Velocidad del LFO, tempo de pista.
+
+
+
+
 **Synthesis Category (Categoría de Síntesis)**:
 La clasificación de un sonido o instrumento dentro del Eurorack Device Panel en grupos funcionales (Ondas Básicas, Sintetizadores Retro, Baterías y Acústicos/Teclados) para optimizar la interfaz y sus capacidades de modulación.
 _Avoid_: Tipo de onda global, género de pista.

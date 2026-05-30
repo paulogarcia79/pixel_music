@@ -196,3 +196,24 @@
 
 - [x] Bug reportado por el usuario con Pixel Explosion solucionado por completo.
 - [x] Toda la suite completa de 72 pruebas pasa al 100% de éxito.
+
+## Sesión: Efectos de Modulación, LFO y Arpegiadores (2026-05-30)
+### Feature en curso
+- `modulation_effects` (en la rama `feature/modulation-effects`)
+
+### Plan
+- [x] T1 — Modificar `src/stores/sequencer.ts` para extender la interfaz `TrackInstance`, inicializar valores por defecto en creación/carga de proyectos/presets y añadir nuevas acciones `setTrackModFX`, `setTrackLFO` y `setTrackArpeggiator`. Cubre: R3, R7, R12.
+- [x] T2 — Modificar el motor de audio (`AudioEngine.ts`) para subdividir el reloj principal del bucle a `32n` y avanzar el Piano Roll step cada 2 ticks de fusa (`step32 % 2 === 0`). Cubre: R1, R2.
+- [x] T3 — Instanciar nodos fijos y enrutar la cadena permanente en serie (`synth -> lfoGain -> lfoFilter -> phaser -> flanger -> chorus -> delay -> reverb`) en `getOrCreateLiveNodes`. Cubre: R3, R4.
+- [x] T4 — Implementar la lógica en tiempo real para `updateModulationFX` (Chorus, Flanger, Phaser) aplicando parámetros de `rate`, `depth` y `wet` y silenciando efectos inactivos (`wet = 0`). Cubre: R5, R6.
+- [x] T5 — Implementar la lógica en tiempo real de `updateLFO` conectando el modulador dinámico a `detune` (Pitch), `lfoFilter` (Filter) o `lfoGain` (Volume), aplicando escalado, y desconectándolo para `'none'`. Cubre: R8, R9, R10, R11.
+- [x] T6 — Implementar el motor de secuenciación secuencial y determinista del Arpegiador en `setupLoop()` con direcciones `up`, `down`, `updown` y `random` extendido a 1-3 octavas. Cubre: R13, R14, R15.
+- [x] T7 — Rediseñar `src/components/sequencer/DevicePanel.vue` para integrar visualmente los tres submódulos interactivos side-by-side utilizando perillas y selectores de estética neón. Cubre: R16.
+- [x] T8 — Añadir suite de pruebas unitarias exhaustivas en `tests/modulationEffects.spec.ts` para verificar toda la funcionalidad y DSP en el motor de audio. Cubre: R1, R2, R4, R5, R8, R9, R10, R11, R13, R14, R15.
+- [x] T9 — Añadir pruebas unitarias de renderizado para `DevicePanel.vue` verificando la correcta visualización de los nuevos controles. Cubre: R16.
+
+- [x] Implementación completada con total éxito y 100% de retrocompatibilidad.
+- [x] Toda la suite completa de 81 pruebas pasa al 100% de éxito en verde.
+- [x] Compilación de producción validada exitosamente.
+- [x] Aprobado por el subagente `reviewer` con veredicto APPROVED en `progress/review_modulation_effects.md`.
+

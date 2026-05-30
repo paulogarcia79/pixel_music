@@ -257,6 +257,189 @@ const isPercussion = computed(() => {
   const percussionTypes = ['kick', 'snare', 'hihat', 'tom', 'clap', 'crash', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'];
   return percussionTypes.includes(selectedTrack.value.type);
 });
+
+// Reactividad para Modulation FX
+const trackModFXType = computed({
+  get() { return selectedTrack.value?.modFX_type ?? 'none'; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackModFX(
+        selectedTrack.value.name,
+        val,
+        selectedTrack.value.modFX_rate ?? 1.5,
+        selectedTrack.value.modFX_depth ?? 0.5,
+        selectedTrack.value.modFX_wet ?? 0.5
+      );
+    }
+  }
+});
+
+const trackModFXRate = computed({
+  get() { return selectedTrack.value?.modFX_rate ?? 1.5; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackModFX(
+        selectedTrack.value.name,
+        selectedTrack.value.modFX_type ?? 'none',
+        val,
+        selectedTrack.value.modFX_depth ?? 0.5,
+        selectedTrack.value.modFX_wet ?? 0.5
+      );
+    }
+  }
+});
+
+const trackModFXDepth = computed({
+  get() { return selectedTrack.value?.modFX_depth ?? 0.5; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackModFX(
+        selectedTrack.value.name,
+        selectedTrack.value.modFX_type ?? 'none',
+        selectedTrack.value.modFX_rate ?? 1.5,
+        val,
+        selectedTrack.value.modFX_wet ?? 0.5
+      );
+    }
+  }
+});
+
+const trackModFXWet = computed({
+  get() { return selectedTrack.value?.modFX_wet ?? 0.5; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackModFX(
+        selectedTrack.value.name,
+        selectedTrack.value.modFX_type ?? 'none',
+        selectedTrack.value.modFX_rate ?? 1.5,
+        selectedTrack.value.modFX_depth ?? 0.5,
+        val
+      );
+    }
+  }
+});
+
+// Reactividad para LFO Modulator
+const trackLFOTarget = computed({
+  get() { return selectedTrack.value?.lfo_target ?? 'none'; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackLFO(
+        selectedTrack.value.name,
+        val,
+        selectedTrack.value.lfo_rate ?? 5.0,
+        selectedTrack.value.lfo_depth ?? 0.5,
+        selectedTrack.value.lfo_waveform ?? 'sine'
+      );
+    }
+  }
+});
+
+const trackLFORate = computed({
+  get() { return selectedTrack.value?.lfo_rate ?? 5.0; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackLFO(
+        selectedTrack.value.name,
+        selectedTrack.value.lfo_target ?? 'none',
+        val,
+        selectedTrack.value.lfo_depth ?? 0.5,
+        selectedTrack.value.lfo_waveform ?? 'sine'
+      );
+    }
+  }
+});
+
+const trackLFODepth = computed({
+  get() { return selectedTrack.value?.lfo_depth ?? 0.5; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackLFO(
+        selectedTrack.value.name,
+        selectedTrack.value.lfo_target ?? 'none',
+        selectedTrack.value.lfo_rate ?? 5.0,
+        val,
+        selectedTrack.value.lfo_waveform ?? 'sine'
+      );
+    }
+  }
+});
+
+const trackLFOWaveform = computed({
+  get() { return selectedTrack.value?.lfo_waveform ?? 'sine'; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackLFO(
+        selectedTrack.value.name,
+        selectedTrack.value.lfo_target ?? 'none',
+        selectedTrack.value.lfo_rate ?? 5.0,
+        selectedTrack.value.lfo_depth ?? 0.5,
+        val
+      );
+    }
+  }
+});
+
+// Reactividad para Arpeggiator
+const trackArpEnabled = computed({
+  get() { return selectedTrack.value?.arp_enabled ?? false; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackArpeggiator(
+        selectedTrack.value.name,
+        val,
+        selectedTrack.value.arp_rate ?? '16n',
+        selectedTrack.value.arp_direction ?? 'up',
+        selectedTrack.value.arp_octaves ?? 1
+      );
+    }
+  }
+});
+
+const trackArpRate = computed({
+  get() { return selectedTrack.value?.arp_rate ?? '16n'; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackArpeggiator(
+        selectedTrack.value.name,
+        selectedTrack.value.arp_enabled ?? false,
+        val,
+        selectedTrack.value.arp_direction ?? 'up',
+        selectedTrack.value.arp_octaves ?? 1
+      );
+    }
+  }
+});
+
+const trackArpDirection = computed({
+  get() { return selectedTrack.value?.arp_direction ?? 'up'; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackArpeggiator(
+        selectedTrack.value.name,
+        selectedTrack.value.arp_enabled ?? false,
+        selectedTrack.value.arp_rate ?? '16n',
+        val,
+        selectedTrack.value.arp_octaves ?? 1
+      );
+    }
+  }
+});
+
+const trackArpOctaves = computed({
+  get() { return selectedTrack.value?.arp_octaves ?? 1; },
+  set(val) {
+    if (selectedTrack.value) {
+      store.setTrackArpeggiator(
+        selectedTrack.value.name,
+        selectedTrack.value.arp_enabled ?? false,
+        selectedTrack.value.arp_rate ?? '16n',
+        selectedTrack.value.arp_direction ?? 'up',
+        val
+      );
+    }
+  }
+});
 </script>
 
 <template>
@@ -489,6 +672,208 @@ const isPercussion = computed(() => {
               label="Delay"
               unit="%"
             />
+          </div>
+        </div>
+
+        <!-- 4. MODULATION FX SLOT -->
+        <div class="flex-shrink-0 w-56 px-4 flex flex-col justify-between border-l border-gray-800/80">
+          <div class="flex items-center gap-1.5 mb-2">
+            <PixelIcon name="sliders" class="w-3.5 h-3.5 text-neon-pink" />
+            <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">4. Modulation FX</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1 mb-2">
+            <button
+              v-for="t in (['none', 'chorus', 'flanger', 'phaser'] as const)"
+              :key="t"
+              @click="trackModFXType = t"
+              class="px-1.5 h-5 bg-black/40 border text-center font-mono text-[8px] rounded uppercase transition-all cursor-pointer min-w-0"
+              :class="[
+                trackModFXType === t 
+                  ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_6px_rgba(5,217,232,0.15)] font-bold' 
+                  : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+              ]"
+            >
+              {{ t }}
+            </button>
+          </div>
+
+          <div class="flex gap-2 justify-center items-center">
+            <Knob 
+              v-model="trackModFXRate"
+              :min="0.1"
+              :max="10.0"
+              :step="0.1"
+              :defaultValue="1.5"
+              label="Rate"
+              unit="Hz"
+            />
+            <Knob 
+              v-model="trackModFXDepth"
+              :min="0.0"
+              :max="1.0"
+              :step="0.05"
+              :defaultValue="0.5"
+              label="Depth"
+              unit=""
+            />
+            <Knob 
+              v-model="trackModFXWet"
+              :min="0.0"
+              :max="1.0"
+              :step="0.05"
+              :defaultValue="0.5"
+              label="Wet"
+              unit=""
+            />
+          </div>
+        </div>
+
+        <!-- 5. LFO MODULATOR -->
+        <div class="flex-shrink-0 w-64 px-4 flex flex-col justify-between border-l border-gray-800/80">
+          <div class="flex items-center gap-1.5 mb-2">
+            <PixelIcon name="activity" class="w-3.5 h-3.5 text-neon-pink animate-pulse" />
+            <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">5. LFO Modulator</span>
+          </div>
+
+          <div class="flex flex-col gap-1 mb-2">
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-[7px] text-gray-550 uppercase w-8">Dest:</span>
+              <div class="flex-1 grid grid-cols-4 gap-1">
+                <button
+                  v-for="target in (['none', 'pitch', 'filter', 'volume'] as const)"
+                  :key="target"
+                  @click="trackLFOTarget = target"
+                  class="px-1 h-4.5 bg-black/40 border text-center font-mono text-[7px] rounded uppercase transition-all cursor-pointer truncate"
+                  :class="[
+                    trackLFOTarget === target 
+                      ? 'border-neon-pink text-neon-pink bg-neon-pink/5 shadow-[0_0_6px_rgba(255,42,109,0.15)] font-bold' 
+                      : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+                  ]"
+                >
+                  {{ target }}
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-[7px] text-gray-550 uppercase w-8">Wave:</span>
+              <div class="flex-1 grid grid-cols-4 gap-1">
+                <button
+                  v-for="wave in (['sine', 'triangle', 'square', 'sawtooth'] as const)"
+                  :key="wave"
+                  @click="trackLFOWaveform = wave"
+                  class="px-1 h-4.5 bg-black/40 border text-center font-mono text-[7px] rounded uppercase transition-all cursor-pointer truncate"
+                  :class="[
+                    trackLFOWaveform === wave 
+                      ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_6px_rgba(5,217,232,0.15)] font-bold' 
+                      : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+                  ]"
+                >
+                  {{ wave }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 justify-center items-center">
+            <Knob 
+              v-model="trackLFORate"
+              :min="0.1"
+              :max="20.0"
+              :step="0.1"
+              :defaultValue="5.0"
+              label="Rate"
+              unit="Hz"
+            />
+            <Knob 
+              v-model="trackLFODepth"
+              :min="0.0"
+              :max="1.0"
+              :step="0.05"
+              :defaultValue="0.5"
+              label="Depth"
+              unit=""
+            />
+          </div>
+        </div>
+
+        <!-- 6. ARPEGGIATOR -->
+        <div class="flex-shrink-0 w-64 px-4 flex flex-col justify-between border-l border-gray-800/80">
+          <div class="flex items-center justify-between gap-1.5 mb-2">
+            <div class="flex items-center gap-1.5">
+              <PixelIcon name="radio" class="w-3.5 h-3.5 text-neon-pink" />
+              <span class="font-mono text-[10px] font-bold tracking-wider text-gray-400 uppercase">6. Arpeggiator</span>
+            </div>
+            <button
+              @click="trackArpEnabled = !trackArpEnabled"
+              class="px-2 py-0.5 font-mono text-[8px] font-bold tracking-wider rounded uppercase transition-all cursor-pointer border active:scale-95 shadow-sm"
+              :class="[
+                trackArpEnabled 
+                  ? 'bg-neon-cyan/15 border-neon-cyan text-neon-cyan shadow-[0_0_8px_rgba(5,217,232,0.3)]' 
+                  : 'bg-black/40 border-gray-800 text-gray-600 hover:border-gray-700'
+              ]"
+            >
+              {{ trackArpEnabled ? 'ON' : 'OFF' }}
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-1 mb-1">
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-[7px] text-gray-550 uppercase w-8">Rate:</span>
+              <div class="flex-1 grid grid-cols-3 gap-1">
+                <button
+                  v-for="r in (['8n', '16n', '32n'] as const)"
+                  :key="r"
+                  @click="trackArpRate = r"
+                  class="px-1 h-4 bg-black/40 border text-center font-mono text-[7px] rounded uppercase transition-all cursor-pointer font-bold"
+                  :class="[
+                    trackArpRate === r 
+                      ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_6px_rgba(5,217,232,0.15)]' 
+                      : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+                  ]"
+                >
+                  {{ r }}
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-[7px] text-gray-550 uppercase w-8">Dir:</span>
+              <div class="flex-1 grid grid-cols-4 gap-1">
+                <button
+                  v-for="d in (['up', 'down', 'updown', 'random'] as const)"
+                  :key="d"
+                  @click="trackArpDirection = d"
+                  class="px-0.5 h-4 bg-black/40 border text-center font-mono text-[6.5px] rounded uppercase transition-all cursor-pointer truncate"
+                  :class="[
+                    trackArpDirection === d 
+                      ? 'border-neon-pink text-neon-pink bg-neon-pink/5 shadow-[0_0_6px_rgba(255,42,109,0.15)] font-bold' 
+                      : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+                  ]"
+                >
+                  {{ d }}
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1">
+              <span class="font-mono text-[7px] text-gray-550 uppercase w-8">Octs:</span>
+              <div class="flex-1 grid grid-cols-3 gap-1">
+                <button
+                  v-for="o in ([1, 2, 3] as const)"
+                  :key="o"
+                  @click="trackArpOctaves = o"
+                  class="px-1 h-4 bg-black/40 border text-center font-mono text-[7px] rounded uppercase transition-all cursor-pointer font-bold"
+                  :class="[
+                    trackArpOctaves === o 
+                      ? 'border-neon-cyan text-neon-cyan bg-neon-cyan/5 shadow-[0_0_6px_rgba(5,217,232,0.15)]' 
+                      : 'border-gray-800/60 text-gray-500 hover:border-gray-700 hover:text-gray-300'
+                  ]"
+                >
+                  {{ o }} Oct
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
