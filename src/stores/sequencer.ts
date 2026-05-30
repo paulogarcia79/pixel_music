@@ -27,6 +27,24 @@ export interface TrackInstance {
   sustain: number;
   dampening: number;
   resonance: number;
+
+  // Modulation FX Slot
+  modFX_type?: 'none' | 'chorus' | 'flanger' | 'phaser';
+  modFX_rate?: number;
+  modFX_depth?: number;
+  modFX_wet?: number;
+
+  // LFO Modulator
+  lfo_target?: 'none' | 'pitch' | 'filter' | 'volume';
+  lfo_rate?: number;
+  lfo_depth?: number;
+  lfo_waveform?: 'sine' | 'triangle' | 'square' | 'sawtooth';
+
+  // Arpeggiator
+  arp_enabled?: boolean;
+  arp_rate?: '8n' | '16n' | '32n';
+  arp_direction?: 'up' | 'down' | 'updown' | 'random';
+  arp_octaves?: number;
 }
 
 export interface Pattern {
@@ -329,7 +347,19 @@ export const useSequencerStore = defineStore('sequencer', {
             decay: 0.1,
             sustain: 0.8,
             dampening: 4000,
-            resonance: 0.95
+            resonance: 0.95,
+            modFX_type: 'none',
+            modFX_rate: 1.5,
+            modFX_depth: 0.5,
+            modFX_wet: 0.5,
+            lfo_target: 'none',
+            lfo_rate: 5.0,
+            lfo_depth: 0.5,
+            lfo_waveform: 'sine',
+            arp_enabled: false,
+            arp_rate: '16n',
+            arp_direction: 'up',
+            arp_octaves: 1
           }
         ]
       }
@@ -371,7 +401,19 @@ export const useSequencerStore = defineStore('sequencer', {
         decay: 0.1,
         sustain: 0.8,
         dampening: 4000,
-        resonance: 0.95
+        resonance: 0.95,
+        modFX_type: 'none',
+        modFX_rate: 1.5,
+        modFX_depth: 0.5,
+        modFX_wet: 0.5,
+        lfo_target: 'none',
+        lfo_rate: 5.0,
+        lfo_depth: 0.5,
+        lfo_waveform: 'sine',
+        arp_enabled: false,
+        arp_rate: '16n',
+        arp_direction: 'up',
+        arp_octaves: 1
       };
     },
     addTrack(name: string, type: InstrumentType = 'square') {
@@ -440,6 +482,33 @@ export const useSequencerStore = defineStore('sequencer', {
       const track = this.getTrackInPattern(trackName);
       if (track) track.delayWet = value;
     },
+    setTrackModFX(trackName: string, type: 'none'|'chorus'|'flanger'|'phaser', rate: number, depth: number, wet: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) {
+        track.modFX_type = type;
+        track.modFX_rate = rate;
+        track.modFX_depth = depth;
+        track.modFX_wet = wet;
+      }
+    },
+    setTrackLFO(trackName: string, target: 'none'|'pitch'|'filter'|'volume', rate: number, depth: number, waveform: 'sine'|'triangle'|'square'|'sawtooth') {
+      const track = this.getTrackInPattern(trackName);
+      if (track) {
+        track.lfo_target = target;
+        track.lfo_rate = rate;
+        track.lfo_depth = depth;
+        track.lfo_waveform = waveform;
+      }
+    },
+    setTrackArpeggiator(trackName: string, enabled: boolean, rate: '8n'|'16n'|'32n', direction: 'up'|'down'|'updown'|'random', octaves: number) {
+      const track = this.getTrackInPattern(trackName);
+      if (track) {
+        track.arp_enabled = enabled;
+        track.arp_rate = rate;
+        track.arp_direction = direction;
+        track.arp_octaves = octaves;
+      }
+    },
     toggleMute(trackName: string) {
       const track = this.getTrackInPattern(trackName);
       if (track) track.muted = !track.muted;
@@ -498,6 +567,18 @@ export const useSequencerStore = defineStore('sequencer', {
             if (t.sustain === undefined) t.sustain = 0.8;
             if (t.dampening === undefined) t.dampening = 4000;
             if (t.resonance === undefined) t.resonance = 0.95;
+            if (t.modFX_type === undefined) t.modFX_type = 'none';
+            if (t.modFX_rate === undefined) t.modFX_rate = 1.5;
+            if (t.modFX_depth === undefined) t.modFX_depth = 0.5;
+            if (t.modFX_wet === undefined) t.modFX_wet = 0.5;
+            if (t.lfo_target === undefined) t.lfo_target = 'none';
+            if (t.lfo_rate === undefined) t.lfo_rate = 5.0;
+            if (t.lfo_depth === undefined) t.lfo_depth = 0.5;
+            if (t.lfo_waveform === undefined) t.lfo_waveform = 'sine';
+            if (t.arp_enabled === undefined) t.arp_enabled = false;
+            if (t.arp_rate === undefined) t.arp_rate = '16n';
+            if (t.arp_direction === undefined) t.arp_direction = 'up';
+            if (t.arp_octaves === undefined) t.arp_octaves = 1;
             if (t.notes) {
               Object.keys(t.notes).forEach(stepKey => {
                 const step = parseInt(stepKey);
@@ -601,6 +682,18 @@ export const useSequencerStore = defineStore('sequencer', {
           if (t.sustain === undefined) t.sustain = 0.8;
           if (t.dampening === undefined) t.dampening = 4000;
           if (t.resonance === undefined) t.resonance = 0.95;
+          if (t.modFX_type === undefined) t.modFX_type = 'none';
+          if (t.modFX_rate === undefined) t.modFX_rate = 1.5;
+          if (t.modFX_depth === undefined) t.modFX_depth = 0.5;
+          if (t.modFX_wet === undefined) t.modFX_wet = 0.5;
+          if (t.lfo_target === undefined) t.lfo_target = 'none';
+          if (t.lfo_rate === undefined) t.lfo_rate = 5.0;
+          if (t.lfo_depth === undefined) t.lfo_depth = 0.5;
+          if (t.lfo_waveform === undefined) t.lfo_waveform = 'sine';
+          if (t.arp_enabled === undefined) t.arp_enabled = false;
+          if (t.arp_rate === undefined) t.arp_rate = '16n';
+          if (t.arp_direction === undefined) t.arp_direction = 'up';
+          if (t.arp_octaves === undefined) t.arp_octaves = 1;
           if (t.notes) {
             Object.keys(t.notes).forEach(stepKey => {
               const step = parseInt(stepKey);

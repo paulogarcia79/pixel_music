@@ -6,6 +6,17 @@ interface TrackNodes {
   reverb: any;
   delay: any;
   currentType: InstrumentType;
+  lfoFilter: Tone.Filter;
+  lfoGain: Tone.Gain;
+  lfo: Tone.LFO;
+  chorus: Tone.Chorus;
+  flanger: CustomFlanger;
+  phaser: Tone.Phaser;
+  arpState?: {
+    notes: string[];
+    currentIndex: number;
+    lastStep16: number;
+  };
 }
 
 export class ExplosionSynth {
@@ -117,6 +128,31 @@ export class PolyPluckSynth {
   public dispose() {
     this.voices.forEach(v => v.dispose());
     this.volumeNode.dispose();
+    return this;
+  }
+}
+
+export class CustomFlanger extends Tone.FeedbackDelay {
+  public frequency: Tone.Signal<"frequency">;
+  public depth: Tone.Signal<"normalRange">;
+
+  constructor(options?: any) {
+    const context = options?.context ?? Tone.getContext();
+    super({
+      context,
+      delayTime: 0.005,
+      feedback: 0.5,
+      wet: options?.wet ?? 0
+    });
+    
+    this.frequency = new Tone.Signal({ context, value: options?.frequency ?? 1.5, units: "frequency" });
+    this.depth = new Tone.Signal({ context, value: options?.depth ?? 0.5, units: "normalRange" });
+  }
+
+  public override dispose(): this {
+    this.frequency.dispose();
+    this.depth.dispose();
+    super.dispose();
     return this;
   }
 }
@@ -295,7 +331,7 @@ export class AudioEngine {
 
     if (existing && existing.currentType !== type) {
       existing.synth.dispose();
-      existing.synth = this.createSynthByType(type, existing.delay, context);
+      existing.synth = this.createSynthByType(type, existing.lfoGain, context);
       existing.currentType = type;
       return existing;
     }
@@ -304,8 +340,25 @@ export class AudioEngine {
 
     const reverb = new Tone.Freeverb({ context, roomSize: 0.7, dampening: 4000 }).connect(this.masterVolume);
     const delay = new Tone.FeedbackDelay({ context, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
-    const synth = this.createSynthByType(type, delay, context);
-    const nodes = { synth, reverb, delay, currentType: type };
+    
+    const chorus = new Tone.Chorus({ context, frequency: 1.5, delayTime: 3.5, depth: 0.5, wet: 0 }).start();
+    const flanger = new CustomFlanger({ context, frequency: 1.5, depth: 0.5, wet: 0 });
+    const phaser = new Tone.Phaser({ context, frequency: 1.5, octaves: 3, Q: 10, wet: 0 });
+    const lfoFilter = new Tone.Filter({ context, type: 'lowpass', frequency: 20000 });
+    const lfoGain = new Tone.Gain({ context, gain: 1.0 });
+    const lfo = new Tone.LFO({ context, frequency: 5.0, min: 0, max: 1 }).start();
+
+    lfoGain.connect(lfoFilter);
+    lfoFilter.connect(phaser);
+    phaser.connect(flanger);
+    flanger.connect(chorus);
+    chorus.connect(delay);
+
+    const synth = this.createSynthByType(type, lfoGain, context);
+    const nodes: TrackNodes = { 
+      synth, reverb, delay, currentType: type,
+      lfoFilter, lfoGain, lfo, chorus, flanger, phaser
+    };
     this.trackNodes.set(key, nodes);
     return nodes;
   }
@@ -316,6 +369,12 @@ export class AudioEngine {
       nodes.synth.dispose();
       nodes.reverb.dispose();
       nodes.delay.dispose();
+      nodes.lfoFilter.dispose();
+      nodes.lfoGain.dispose();
+      nodes.lfo.dispose();
+      nodes.chorus.dispose();
+      nodes.flanger.dispose();
+      nodes.phaser.dispose();
       this.trackNodes.delete(trackKey);
     }
   }
@@ -325,14 +384,108 @@ export class AudioEngine {
       nodes.synth.dispose();
       nodes.reverb.dispose();
       nodes.delay.dispose();
+      nodes.lfoFilter.dispose();
+      nodes.lfoGain.dispose();
+      nodes.lfo.dispose();
+      nodes.chorus.dispose();
+      nodes.flanger.dispose();
+      nodes.phaser.dispose();
     });
     this.trackNodes.clear();
+  }
+
+  private static updateModulationFX(nodes: any, track: any, time: number) {
+    const type = track.modFX_type ?? 'none';
+    const rate = track.modFX_rate ?? 1.5;
+    const depth = track.modFX_depth ?? 0.5;
+    const wet = track.modFX_wet ?? 0.5;
+
+    if (type === 'none') {
+      nodes.chorus.wet.setValueAtTime(0, time);
+      nodes.flanger.wet.setValueAtTime(0, time);
+      nodes.phaser.wet.setValueAtTime(0, time);
+    } else if (type === 'chorus') {
+      nodes.chorus.frequency.setValueAtTime(rate, time);
+      nodes.chorus.depth = depth;
+      nodes.chorus.wet.setValueAtTime(wet, time);
+      nodes.flanger.wet.setValueAtTime(0, time);
+      nodes.phaser.wet.setValueAtTime(0, time);
+    } else if (type === 'flanger') {
+      nodes.flanger.frequency.setValueAtTime(rate, time);
+      nodes.flanger.depth.setValueAtTime(depth, time);
+      nodes.flanger.wet.setValueAtTime(wet, time);
+      nodes.chorus.wet.setValueAtTime(0, time);
+      nodes.phaser.wet.setValueAtTime(0, time);
+    } else if (type === 'phaser') {
+      nodes.phaser.frequency.setValueAtTime(rate, time);
+      nodes.phaser.wet.setValueAtTime(wet, time);
+      nodes.chorus.wet.setValueAtTime(0, time);
+      nodes.flanger.wet.setValueAtTime(0, time);
+    }
+  }
+
+  private static updateLFO(nodes: any, track: any, time: number) {
+    const target = track.lfo_target ?? 'none';
+    const rate = track.lfo_rate ?? 5.0;
+    const depth = track.lfo_depth ?? 0.5;
+    const waveform = track.lfo_waveform ?? 'sine';
+    
+    nodes.lfo.disconnect();
+    
+    nodes.lfo.frequency.setValueAtTime(rate, time);
+    nodes.lfo.type = waveform;
+
+    if (target === 'pitch') {
+      const range = 100 * depth;
+      nodes.lfo.min = -range;
+      nodes.lfo.max = range;
+      
+      nodes.lfoFilter.frequency.setValueAtTime(20000, time);
+      nodes.lfoGain.gain.setValueAtTime(1.0, time);
+      
+      if (nodes.synth.detune) {
+        nodes.lfo.connect(nodes.synth.detune);
+      }
+    } else if (target === 'filter') {
+      nodes.lfo.min = 200;
+      nodes.lfo.max = 200 + (10000 - 200) * depth;
+      
+      if (nodes.synth.detune && nodes.synth.detune.setValueAtTime) {
+        nodes.synth.detune.setValueAtTime(0, time);
+      } else if (nodes.synth.detune) {
+        nodes.synth.detune.value = 0;
+      }
+      nodes.lfoGain.gain.setValueAtTime(1.0, time);
+      
+      nodes.lfo.connect(nodes.lfoFilter.frequency);
+    } else if (target === 'volume') {
+      nodes.lfo.min = 1.0 - depth;
+      nodes.lfo.max = 1.0;
+      
+      if (nodes.synth.detune && nodes.synth.detune.setValueAtTime) {
+        nodes.synth.detune.setValueAtTime(0, time);
+      } else if (nodes.synth.detune) {
+        nodes.synth.detune.value = 0;
+      }
+      nodes.lfoFilter.frequency.setValueAtTime(20000, time);
+      
+      nodes.lfo.connect(nodes.lfoGain.gain);
+    } else {
+      if (nodes.synth.detune && nodes.synth.detune.setValueAtTime) {
+        nodes.synth.detune.setValueAtTime(0, time);
+      } else if (nodes.synth.detune) {
+        nodes.synth.detune.value = 0;
+      }
+      nodes.lfoFilter.frequency.setValueAtTime(20000, time);
+      nodes.lfoGain.gain.setValueAtTime(1.0, time);
+    }
   }
 
   private static setupLoop() {
     const store = useSequencerStore();
     Tone.Transport.scheduleRepeat((time) => {
-      const globalStep = Math.round(Tone.Transport.getSecondsAtTime(time) / Tone.Time('16n').toSeconds());
+      const step32 = Math.round(Tone.Transport.getSecondsAtTime(time) / Tone.Time('32n').toSeconds());
+      const currentGlobalStep16 = Math.floor(step32 / 2);
       let active: { patternId: number, stepInPattern: number, arrangerTrackId: number }[] = [];
       
       if (store.isSongMode) {
@@ -341,11 +494,13 @@ export class AudioEngine {
           const s = store.patterns[p.patternId]?.gridSize || 32;
           if (p.startStep + s > maxStep) maxStep = p.startStep + s;
         }));
-        const currentGlobalStep = globalStep % maxStep;
-        Tone.Draw.schedule(() => {
-          store.globalStep = currentGlobalStep;
-          store.setCurrentStep(0);
-        }, time);
+        const currentGlobalStep = currentGlobalStep16 % maxStep;
+        if (step32 % 2 === 0) {
+          Tone.Draw.schedule(() => {
+            store.globalStep = currentGlobalStep;
+            store.setCurrentStep(0);
+          }, time);
+        }
         
         store.arrangerTracks.forEach(t => t.placements.forEach(p => {
           const s = store.patterns[p.patternId]?.gridSize || 32;
@@ -356,11 +511,13 @@ export class AudioEngine {
       } else {
         const pId = store.currentPatternId;
         const s = store.patterns[pId]?.gridSize || 32;
-        const currentStep = (globalStep % s) + 1;
-        Tone.Draw.schedule(() => {
-          store.setCurrentStep(currentStep);
-          store.globalStep = 0;
-        }, time);
+        const currentStep = (currentGlobalStep16 % s) + 1;
+        if (step32 % 2 === 0) {
+          Tone.Draw.schedule(() => {
+            store.setCurrentStep(currentStep);
+            store.globalStep = 0;
+          }, time);
+        }
         active.push({ patternId: pId, stepInPattern: currentStep, arrangerTrackId: 0 });
       }
 
@@ -369,51 +526,117 @@ export class AudioEngine {
         if (!pattern) return;
         pattern.tracks.forEach(track => {
           if (track.muted) return;
-          const notes = track.notes[stepInPattern];
-          if (notes && notes.length > 0) {
-            const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
-            
-            if (nodes.synth.envelope) {
-              nodes.synth.envelope.attack = track.attack;
-              nodes.synth.envelope.decay = track.decay;
-              nodes.synth.envelope.sustain = track.sustain;
-              nodes.synth.envelope.release = track.release;
-            } else if (nodes.synth.set) {
-              nodes.synth.set({
-                envelope: {
-                  attack: track.attack,
-                  decay: track.decay,
-                  sustain: track.sustain,
-                  release: track.release
-                }
-              });
-            }
-            if (track.type === 'guitar_pixel') {
-              nodes.synth.set({
-                dampening: track.dampening,
-                resonance: track.resonance
-              });
-            }
-            
-            nodes.synth.volume.setValueAtTime(track.volume - 6, time);
-            nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
-            nodes.delay.wet.setValueAtTime(track.delayWet, time);
-
-            const type = track.type;
-            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
-              if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
-                const noteToPlay = (notes && notes.length > 0 && notes[0]) ? notes[0] : (type === 'kick' ? 'C2' : 'C3');
-                nodes.synth.triggerAttackRelease(noteToPlay, '16n', time);
-              } else {
-                nodes.synth.triggerAttackRelease('16n', time);
+          const notes = track.notes[stepInPattern] || [];
+          const nodes = this.getOrCreateLiveNodes(`${arrangerTrackId}_${track.name}`, track.type);
+          
+          if (nodes.synth.envelope) {
+            nodes.synth.envelope.attack = track.attack;
+            nodes.synth.envelope.decay = track.decay;
+            nodes.synth.envelope.sustain = track.sustain;
+            nodes.synth.envelope.release = track.release;
+          } else if (nodes.synth.set) {
+            nodes.synth.set({
+              envelope: {
+                attack: track.attack,
+                decay: track.decay,
+                sustain: track.sustain,
+                release: track.release
               }
-            } else {
-              nodes.synth.triggerAttackRelease(notes, '16n', time);
+            });
+          }
+          if (track.type === 'guitar_pixel') {
+            nodes.synth.set({
+              dampening: track.dampening,
+              resonance: track.resonance
+            });
+          }
+          
+          nodes.synth.volume.setValueAtTime(track.volume - 6, time);
+          nodes.reverb.wet.setValueAtTime(track.reverbWet, time);
+          nodes.delay.wet.setValueAtTime(track.delayWet, time);
+
+          this.updateModulationFX(nodes, track, time);
+          this.updateLFO(nodes, track, time);
+
+          if ((track.arp_enabled ?? false) && notes.length > 0) {
+            if (step32 % 2 === 0) {
+              const sorted = [...notes].sort((a, b) => Tone.Frequency(a).toMidi() - Tone.Frequency(b).toMidi());
+              const expanded: string[] = [];
+              const octaves = track.arp_octaves ?? 1;
+              for (let oct = 0; oct < octaves; oct++) {
+                sorted.forEach(note => {
+                  const midi = Tone.Frequency(note).toMidi() + oct * 12;
+                  expanded.push(Tone.Frequency(midi, "midi").toNote());
+                });
+              }
+              
+              let finalNotes = expanded;
+              const arp_direction = track.arp_direction ?? 'up';
+              if (arp_direction === 'down') {
+                finalNotes = [...expanded].reverse();
+              } else if (arp_direction === 'updown') {
+                if (expanded.length > 1) {
+                  finalNotes = [...expanded, ...[...expanded].slice(1, -1).reverse()];
+                } else {
+                  finalNotes = expanded;
+                }
+              } else if (arp_direction === 'random') {
+                const copy = [...expanded];
+                for (let i = copy.length - 1; i > 0; i--) {
+                  const j = Math.floor(Math.random() * (i + 1));
+                  [copy[i], copy[j]] = [copy[j], copy[i]];
+                }
+                finalNotes = copy;
+              }
+              
+              nodes.arpState = {
+                notes: finalNotes,
+                currentIndex: 0,
+                lastStep16: stepInPattern
+              };
+            }
+
+            let ticksPerArpNote = 2;
+            const arp_rate = track.arp_rate ?? '16n';
+            if (arp_rate === '32n') ticksPerArpNote = 1;
+            else if (arp_rate === '8n') ticksPerArpNote = 4;
+
+            if (step32 % ticksPerArpNote === 0) {
+              const arpState = nodes.arpState;
+              if (arpState && arpState.notes.length > 0) {
+                const noteToPlay = arpState.notes[arpState.currentIndex % arpState.notes.length];
+                arpState.currentIndex = (arpState.currentIndex + 1) % arpState.notes.length;
+                
+                const type = track.type;
+                if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+                  if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
+                    nodes.synth.triggerAttackRelease(noteToPlay, arp_rate, time);
+                  } else {
+                    nodes.synth.triggerAttackRelease(arp_rate, time);
+                  }
+                } else {
+                  nodes.synth.triggerAttackRelease(noteToPlay, arp_rate, time);
+                }
+              }
+            }
+          } else {
+            if (step32 % 2 === 0 && notes.length > 0) {
+              const type = track.type;
+              if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+                if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
+                  const noteToPlay = notes[0] || (type === 'kick' ? 'C2' : 'C3');
+                  nodes.synth.triggerAttackRelease(noteToPlay, '16n', time);
+                } else {
+                  nodes.synth.triggerAttackRelease('16n', time);
+                }
+              } else {
+                nodes.synth.triggerAttackRelease(notes, '16n', time);
+              }
             }
           }
         });
       });
-    }, '16n');
+    }, '32n');
   }
 
   public static async toggle() {
@@ -542,8 +765,22 @@ export class AudioEngine {
         if (!synths.has(key)) {
           const reverb = new Tone.Freeverb({ context: context as any, roomSize: 0.7, dampening: 4000 }).connect(master);
           const delay = new Tone.FeedbackDelay({ context: context as any, delayTime: "8n.", feedback: 0.3, wet: 0 }).connect(reverb);
-          const synth = AudioEngine.createSynthByType(d.track.type, delay, context as any);
-          synths.set(key, { synth, reverb, delay });
+          
+          const chorus = new Tone.Chorus({ context: context as any, frequency: 1.5, delayTime: 3.5, depth: 0.5, wet: 0 }).start();
+          const flanger = new CustomFlanger({ context: context as any, frequency: 1.5, depth: 0.5, wet: 0 });
+          const phaser = new Tone.Phaser({ context: context as any, frequency: 1.5, octaves: 3, Q: 10, wet: 0 });
+          const lfoFilter = new Tone.Filter({ context: context as any, type: 'lowpass', frequency: 20000 });
+          const lfoGain = new Tone.Gain({ context: context as any, gain: 1.0 });
+          const lfo = new Tone.LFO({ context: context as any, frequency: 5.0, min: 0, max: 1 }).start();
+
+          lfoGain.connect(lfoFilter);
+          lfoFilter.connect(phaser);
+          phaser.connect(flanger);
+          flanger.connect(chorus);
+          chorus.connect(delay);
+
+          const synth = AudioEngine.createSynthByType(d.track.type, lfoGain, context as any);
+          synths.set(key, { synth, reverb, delay, lfoFilter, lfoGain, lfo, chorus, flanger, phaser });
         }
         const n = synths.get(key);
         if (n.synth.envelope) {
@@ -571,17 +808,79 @@ export class AudioEngine {
         n.reverb.wet.setValueAtTime(d.track.reverbWet, d.t);
         n.delay.wet.setValueAtTime(d.track.delayWet, d.t);
         
+        // Actualizar efectos de modulación y LFO en offline
+        AudioEngine.updateModulationFX(n, d.track, d.t);
+        AudioEngine.updateLFO(n, d.track, d.t);
+
         const type = d.track.type;
-        if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
-          if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
-            const rawNote = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : null;
-            const noteToPlay = rawNote || (type === 'kick' ? 'C2' : 'C3');
-            n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);
-          } else {
-            n.synth.triggerAttackRelease('16n', d.t);
+        if ((d.track.arp_enabled ?? false) && d.n && d.n.length > 0) {
+          // Ordenar cromáticamente y expandir octavas para arpegio offline
+          const sorted = [...d.n].sort((a, b) => Tone.Frequency(a).toMidi() - Tone.Frequency(b).toMidi());
+          const expanded: string[] = [];
+          const octaves = d.track.arp_octaves ?? 1;
+          for (let oct = 0; oct < octaves; oct++) {
+            sorted.forEach(note => {
+              const midi = Tone.Frequency(note).toMidi() + oct * 12;
+              expanded.push(Tone.Frequency(midi, "midi").toNote());
+            });
+          }
+          
+          let finalNotes = expanded;
+          const arp_direction = d.track.arp_direction ?? 'up';
+          if (arp_direction === 'down') {
+            finalNotes = [...expanded].reverse();
+          } else if (arp_direction === 'updown') {
+            if (expanded.length > 1) {
+              finalNotes = [...expanded, ...[...expanded].slice(1, -1).reverse()];
+            } else {
+              finalNotes = expanded;
+            }
+          } else if (d.track.arp_direction === 'random') {
+            const copy = [...expanded];
+            for (let i = copy.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            finalNotes = copy;
+          }
+
+          let ticks = 1;
+          let dur = '16n';
+          const arp_rate = d.track.arp_rate ?? '16n';
+          if (arp_rate === '32n') {
+            ticks = 2;
+            dur = '32n';
+          } else if (arp_rate === '8n') {
+            ticks = 1;
+            dur = '8n';
+          }
+
+          for (let i = 0; i < ticks; i++) {
+            const noteToPlay = finalNotes[i % finalNotes.length];
+            const noteTime = d.t + i * (secondsPerStep / ticks);
+            
+            if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+              if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
+                n.synth.triggerAttackRelease(noteToPlay, dur, noteTime);
+              } else {
+                n.synth.triggerAttackRelease(dur, noteTime);
+              }
+            } else {
+              n.synth.triggerAttackRelease(noteToPlay, dur, noteTime);
+            }
           }
         } else {
-          n.synth.triggerAttackRelease(d.n, '16n', d.t);
+          if (['kick', 'snare', 'hihat', 'clap', 'crash', 'noise', 'tom', 'conga', 'cowbell', 'woodblock', 'shaker', 'rimshot', 'retro_laser', 'retro_explosion'].includes(type)) {
+            if (['kick', 'tom', 'conga', 'woodblock', 'retro_laser'].includes(type)) {
+              const rawNote = d.n ? (Array.isArray(d.n) ? d.n[0] : d.n) : null;
+              const noteToPlay = rawNote || (type === 'kick' ? 'C2' : 'C3');
+              n.synth.triggerAttackRelease(noteToPlay, '16n', d.t);
+            } else {
+              n.synth.triggerAttackRelease('16n', d.t);
+            }
+          } else {
+            n.synth.triggerAttackRelease(d.n, '16n', d.t);
+          }
         }
       });
     }, totalSeconds);
